@@ -1,0 +1,124 @@
+services:
+  # ── PostgreSQL ─────────────────────────────────────────────
+  postgres:
+    image: postgres:18.3-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: postgres
+      # variável CUSTOMIZADA, lida pelo init-databases.sh:
+      POSTGRES_EXTRA_DATABASES: catalog,order,delivery
+    volumes:
+      # ATENÇÃO Postgres 18+: monte em /var/lib/postgresql (SEM /data no fim).
+      # Montar em /var/lib/postgresql/data quebra a imagem 18+.
+      - postgres_data:/var/lib/postgresql
+      # scripts em /docker-entrypoint-initdb.d/ rodam UMA vez, na criação do volume:
+      - ./docker/postgres/init-databases.sh:/docker-entrypoint-initdb.d/init-databases.sh:ro
+    healthcheck:
+      # informe -d postgres! Sem -d, o pg_isready tenta conectar num
+      # database com o nome do usuário ("admin") que não existe.
+      test: [ "CMD-SHELL", "pg_isready -U admin -d postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ── RabbitMQ (com UI de administração na 15672) ────────────
+  rabbitmq:
+    image: rabbitmq:4.2.4-management-alpine
+    ports:
+      - "5672:5672" # AMQP (os serviços conectam aqui)
+      - "15672:15672" # UI web: http://localhost:15672 (admin/admin)
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "-q", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # ── Keycloak (IdP) ─────────────────────────────────────────
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.5.5
+    # --import-realm lê todo JSON em /opt/keycloak/data/import
+    # e cria o realm automaticamente → ZERO configuração manual
+    command: start-dev --import-realm
+    ports:
+      - "8080:8080"
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      KC_HEALTH_ENABLED: "true"
+    volumes:
+      - ./docker/keycloak:/opt/keycloak/data/import:ro
+
+  # ── Kong (API Gateway, modo DB-less) ───────────────────────
+  kong:
+    image: kong:3.9.1
+    ports:
+      - "8000:8000" # proxy — TUDO que o frontend chama passa aqui
+      - "8001:8001" # admin API (só leitura útil no modo db-less)
+    environment:
+      KONG_DATABASE: "off" # modo declarativo
+      KONG_DECLARATIVE_CONFIG: /kong/kong.yml # config versionada no git
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+    volumes:
+      - ./docker/kong:/kong:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # ── Serviços de aplicação ──────────────────────────────────
+  catalog:
+    build:
+      # context é a RAIZ do monorepo, não a pasta do serviço!
+      # O Dockerfile precisa copiar package.json da raiz e packages/shared.
+      context: .
+      dockerfile: services/catalog/Dockerfile
+    ports:
+      - "4001:4001"
+    env_file:
+      - ./services/catalog/.env
+    depends_on:
+      postgres:
+        condition: service_healthy # espera o healthcheck PASSAR,
+      rabbitmq:
+        # não só o container iniciar
+        condition: service_healthy
+
+  order:
+    build:
+      context: .
+      dockerfile: services/order/Dockerfile
+    ports:
+      - "4002:4002"
+    env_file:
+      - ./services/order/.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  delivery:
+    build:
+      context: .
+      dockerfile: services/delivery/Dockerfile
+    ports:
+      - "4003:4003"
+    env_file:
+      - ./services/delivery/.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  rabbitmq_data:

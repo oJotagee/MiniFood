@@ -1,0 +1,26 @@
+_format_version: "3.0"
+
+services:
+  - name: catalog-service
+    url: http://games:4001
+    routes:
+      - name: catalog-routes
+        paths:
+          - /catalog
+        strip_path: true
+
+  - name: order-service
+    url: http://orders:4002
+    routes:
+      - name: order-routes
+        paths:
+          - /orders
+        strip_path: true
+
+  - name: delivery-service
+    url: http://delivery:4003
+    routes:
+      - name: delivery-routes
+        paths:
+          - /delivery
+        strip_path: true
