@@ -33,3 +33,6 @@ yarn-error.log*
 
 # Test coverage
 coverage/
+
+# Generated prisma client
+generated/

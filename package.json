@@ -11,7 +11,10 @@
     "docker:down": "docker compose down",
     "docker:prune": "docker compose down -v --remove-orphans",
     "test": "bun test",
-    "format": "prettier --write \"**/*.{ts,tsx}\""
+    "format": "prettier --write \"**/*.{ts,tsx}\"",
+    "prisma:migrate:dev:catalog": "bun prisma migrate dev --config services/catalog/prisma.config.ts",
+    "prisma:generate:catalog": "bunx prisma generate --config services/catalog/prisma.config.ts",
+    "prisma:studio:catalog": "bunx prisma studio --config services/catalog/prisma.config.ts"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

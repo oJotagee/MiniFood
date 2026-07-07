@@ -1,0 +1,96 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Establishment {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  ownerId     String
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  address           EstablishmentAddress?
+  productCategories ProductCategory[]
+
+  @@map("establishment")
+}
+
+model EstablishmentAddress {
+  id           String   @id @default(uuid())
+  street       String
+  number       String
+  complement   String?
+  neighborhood String
+  city         String
+  state        String
+  zipCode      String
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  establishmentId String        @unique
+  establishment   Establishment @relation(fields: [establishmentId], references: [id])
+
+  @@map("establishment_address")
+}
+
+model ProductCategory {
+  id        String   @id @default(uuid())
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  establishmentId String        @map("establishment_id")
+  establishment   Establishment @relation(fields: [establishmentId], references: [id])
+
+  products Product[]
+
+  @@map("product_category")
+}
+
+model Product {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  priceCents  BigInt   @map("price_cents")
+  isAvailable Boolean  @default(true) @map("is_available")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  categoryId String          @map("category_id")
+  category   ProductCategory @relation(fields: [categoryId], references: [id])
+
+  @@map("product")
+}
+
+model OutboxEvent {
+  eventId     String    @id @map("event_id")
+  type        String
+  payload     Json
+  occurredAt  DateTime  @map("occurred_at")
+  publishedAt DateTime? @map("published_at")
+  attempts    Int       @default(0)
+  lastError   String?   @map("last_error")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  @@index([publishedAt, createdAt])
+  @@map("outbox_events")
+}
+
+model InboxEvent {
+  eventId     String    @id @map("event_id")
+  type        String
+  status      String
+  attempts    Int       @default(0)
+  lastError   String?   @map("last_error")
+  receivedAt  DateTime  @default(now()) @map("received_at")
+  processedAt DateTime? @map("processed_at")
+
+  @@index([status])
+  @@map("inbox_events")
+}
