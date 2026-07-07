@@ -1,9 +1,10 @@
-export type EventEnvelope<TType extends string, TPayload> = {
+export type EventEnvelope<TType extends string, TPayload, TVersion extends number = 1> = {
   eventId: string;
   type: TType;
-  version: 1;
-  payload: TPayload;
+  version: TVersion;
   occurredAt: string;
+  payload: TPayload;
+  producer: string;
   correlationId?: string;
   causationId?: string;
 };

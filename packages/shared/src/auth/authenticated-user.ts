@@ -1,4 +1,4 @@
-export type AuthenticatedPlayer = {
+export type AuthenticatedUser = {
   userId: string;
   username: string;
   email?: string;
