@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 
-import { AddressError } from '../../../src/domain/address/address.error';
-import { Address } from '../../../src/domain/address/address.vo';
+import { AddressError } from '../../../src/domain/errors/address.error';
+import { Address } from '../../../src/domain/value-objects/address.vo';
 
 describe('Address', () => {
   it('creates an address with catalog fields', () => {

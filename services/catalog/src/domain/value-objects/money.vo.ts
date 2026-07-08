@@ -1,4 +1,4 @@
-import { InvalidMoneyError } from './money.errors';
+import { InvalidMoneyError } from '../errors/money.errors';
 
 export class Money {
   private constructor(readonly priceCents: bigint) {

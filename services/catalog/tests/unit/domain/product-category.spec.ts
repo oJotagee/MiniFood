@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 
-import { InvalidProductCategoryError } from '../../../src/domain/product-category/product-category.errors';
-import { ProductCategoryEntity } from '../../../src/domain/product-category/product-category.entity';
+import { InvalidProductCategoryError } from '../../../src/domain/errors/product-category.errors';
+import { ProductCategoryEntity } from '../../../src/domain/entities/product-category.entity';
 
 describe('ProductCategoryEntity', () => {
   it('creates a valid product category', () => {

@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'bun:test';
 
-import { ProductEntity } from '../../../src/domain/product/product.entity';
-import { Money } from '../../../src/domain/money/money.vo';
+import { Money } from '../../../src/domain/value-objects/money.vo';
 import {
   InvalidProductError,
   ProductAlreadyDeactivatedError,
-} from '../../../src/domain/product/product.errors';
+} from '../../../src/domain/errors/product.errors';
+import { ProductEntity } from '../../../src/domain/entities/product.entity';
 
 describe('ProductEntity', () => {
   it('creates a product with Money price', () => {

@@ -1,4 +1,4 @@
-import { AddressError } from './address.error';
+import { AddressError } from '../errors/address.error';
 
 export type AddressProps = {
   street: string;

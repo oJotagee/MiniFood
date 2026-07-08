@@ -1,7 +1,7 @@
 import { EstablishmentCreatedEvent } from '../events/establishment-created.event';
 import { EstablishmentUpdatedEvent } from '../events/establishment-updated.event';
 import { InvalidEstablishmentDataError } from './establishment.error';
-import { Address, AddressProps } from '../address/address.vo';
+import { Address, AddressProps } from '../value-objects/address.vo';
 
 export type EstablishmentDomainEvent = EstablishmentCreatedEvent | EstablishmentUpdatedEvent;
 
