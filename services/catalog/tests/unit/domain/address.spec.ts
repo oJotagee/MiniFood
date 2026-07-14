@@ -26,6 +26,28 @@ describe('Address', () => {
     });
   });
 
+  it('trims fields and drops blank complement', () => {
+    const address = Address.create({
+      street: '  Main St  ',
+      number: ' 100 ',
+      complement: '   ',
+      neighborhood: ' Center ',
+      city: ' Sao Paulo ',
+      state: ' SP ',
+      zipCode: ' 01000-000 ',
+    });
+
+    expect(address.toJSON()).toEqual({
+      street: 'Main St',
+      number: '100',
+      complement: undefined,
+      neighborhood: 'Center',
+      city: 'Sao Paulo',
+      state: 'SP',
+      zipCode: '01000-000',
+    });
+  });
+
   it('rejects missing required fields', () => {
     expect(() =>
       Address.create({
@@ -37,5 +59,23 @@ describe('Address', () => {
         zipCode: '01000-000',
       }),
     ).toThrow(AddressError);
+  });
+
+  it('compares two addresses by value', () => {
+    const props = {
+      street: 'Main St',
+      number: '100',
+      neighborhood: 'Center',
+      city: 'Sao Paulo',
+      state: 'SP',
+      zipCode: '01000-000',
+    };
+
+    const a = Address.create(props);
+    const b = Address.create(props);
+    const c = Address.create({ ...props, city: 'Rio de Janeiro' });
+
+    expect(a.equals(b)).toBe(true);
+    expect(a.equals(c)).toBe(false);
   });
 });

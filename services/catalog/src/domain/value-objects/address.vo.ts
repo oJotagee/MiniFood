@@ -60,10 +60,6 @@ export class Address {
     });
   }
 
-  static fromObject(input: AddressProps): Address {
-    return Address.create(input);
-  }
-
   equals(other: Address): boolean {
     return (
       this.street === other.street &&

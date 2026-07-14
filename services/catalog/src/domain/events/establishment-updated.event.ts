@@ -2,7 +2,6 @@ export type EstablishmentUpdatedEvent = {
   type: 'establishment.updated';
   occurredAt: Date;
   payload: {
-    operationId: string;
     establishmentId: string;
     ownerId: string;
     name: string;

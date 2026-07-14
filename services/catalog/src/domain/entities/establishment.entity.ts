@@ -1,7 +1,7 @@
 import { EstablishmentCreatedEvent } from '../events/establishment-created.event';
 import { EstablishmentUpdatedEvent } from '../events/establishment-updated.event';
-import { InvalidEstablishmentDataError } from './establishment.error';
-import { Address, AddressProps } from '../value-objects/address.vo';
+import { InvalidEstablishmentDataError } from '../errors/establishment.error';
+import { Address } from '../value-objects/address.vo';
 
 export type EstablishmentDomainEvent = EstablishmentCreatedEvent | EstablishmentUpdatedEvent;
 
@@ -17,18 +17,16 @@ type EstablishmentProps = {
 
 type EstablishmentCreateInput = {
   id: string;
-  operationId: string;
   name: string;
   description?: string;
   ownerId: string;
-  address: AddressProps;
+  address: Address;
 };
 
 type EstablishmentUpdateInput = {
-  operationId: string;
   name?: string;
-  description?: string;
-  address?: AddressProps;
+  description?: string | null;
+  address?: Address;
 };
 
 type EstablishmentRestoreInput = {
@@ -38,7 +36,7 @@ type EstablishmentRestoreInput = {
   ownerId: string;
   createdAt: Date;
   updatedAt: Date;
-  address: AddressProps;
+  address: Address;
 };
 
 export class EstablishmentEntity {
@@ -86,14 +84,13 @@ export class EstablishmentEntity {
       ownerId: input.ownerId,
       createdAt: now,
       updatedAt: now,
-      address: Address.create(input.address),
+      address: input.address,
     });
 
     establishment.recordDomainEvent({
       type: 'establishment.created',
       occurredAt: now,
       payload: {
-        operationId: input.operationId,
         establishmentId: establishment.id,
         ownerId: establishment.ownerId,
         name: establishment.name,
@@ -113,28 +110,30 @@ export class EstablishmentEntity {
       ownerId: input.ownerId,
       createdAt: input.createdAt,
       updatedAt: input.updatedAt,
-      address: Address.create(input.address),
+      address: input.address,
     });
   }
 
   update(input: EstablishmentUpdateInput): EstablishmentEntity {
     const now = new Date();
 
+    const description =
+      input.description === null ? undefined : (input.description ?? this.description);
+
     const establishment = new EstablishmentEntity({
       id: this.id,
       name: input.name ?? this.name,
-      description: input.description ?? this.description,
+      description,
       ownerId: this.ownerId,
       createdAt: this.createdAt,
       updatedAt: now,
-      address: input.address ? Address.create(input.address) : this.address,
+      address: input.address ?? this.address,
     });
 
     establishment.recordDomainEvent({
       type: 'establishment.updated',
       occurredAt: now,
       payload: {
-        operationId: input.operationId,
         establishmentId: establishment.id,
         ownerId: establishment.ownerId,
         name: establishment.name,
