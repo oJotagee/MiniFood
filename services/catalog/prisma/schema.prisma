@@ -8,7 +8,7 @@ datasource db {
 }
 
 model Establishment {
-  id          String   @id @default(uuid())
+  id          String   @id
   name        String
   description String?
   ownerId     String
@@ -40,7 +40,7 @@ model EstablishmentAddress {
 }
 
 model ProductCategory {
-  id        String   @id @default(uuid())
+  id        String   @id
   name      String
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -54,7 +54,7 @@ model ProductCategory {
 }
 
 model Product {
-  id          String   @id @default(uuid())
+  id          String   @id
   name        String
   description String?
   priceCents  BigInt   @map("price_cents")
