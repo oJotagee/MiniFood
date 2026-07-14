@@ -1,6 +1,6 @@
+import { InvalidProductCategoryError } from '../errors/product-category.errors';
 import { ProductCategoryCreatedEvent } from '../events/product-category-created.event';
 import { ProductCategoryUpdatedEvent } from '../events/product-category-updated.event';
-import { InvalidProductCategoryError } from './product-category.errors';
 
 export type ProductCategoryDomainEvent = ProductCategoryCreatedEvent | ProductCategoryUpdatedEvent;
 

@@ -1,8 +1,8 @@
-import { InvalidProductError, ProductAlreadyDeactivatedError } from './product.errors';
 import { ProductDeactivatedEvent } from '../events/product-deactivated.event';
 import { ProductCreatedEvent } from '../events/product-created.event';
 import { ProductUpdatedEvent } from '../events/product-updated.event';
 import { Money } from '../value-objects/money.vo';
+import { InvalidProductError, ProductAlreadyDeactivatedError } from '../errors/product.errors';
 
 export type ProductDomainEvent =
   | ProductCreatedEvent
