@@ -68,9 +68,7 @@ export class EstablishmentPrismaRepository implements EstablishmentRepository {
       select: { id: true },
     });
 
-    if (!existing)
-      throw new EstablishmentNotFoundError(establishment.id);
-
+    if (!existing) throw new EstablishmentNotFoundError(establishment.id);
 
     await this.prismaService.establishment.update({
       where: { id: establishment.id },

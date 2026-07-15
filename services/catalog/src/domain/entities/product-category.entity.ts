@@ -14,13 +14,11 @@ type ProductCategoryProps = {
 
 type ProductCategoryCreateInput = {
   id: string;
-  operationId: string;
   name: string;
   establishmentId: string;
 };
 
 type ProductCategoryUpdateInput = {
-  operationId: string;
   name?: string;
 };
 
@@ -74,7 +72,6 @@ export class ProductCategoryEntity {
       type: 'product.category.created',
       occurredAt: now,
       payload: {
-        operationId: input.operationId,
         categoryId: category.id,
         establishmentId: category.establishmentId,
         name: category.name,
@@ -109,7 +106,6 @@ export class ProductCategoryEntity {
       type: 'product.category.updated',
       occurredAt: now,
       payload: {
-        operationId: input.operationId,
         categoryId: category.id,
         establishmentId: category.establishmentId,
         name: category.name,

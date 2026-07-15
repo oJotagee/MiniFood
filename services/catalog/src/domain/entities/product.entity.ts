@@ -1,8 +1,8 @@
+import { InvalidProductError, ProductAlreadyDeactivatedError } from '../errors/product.errors';
 import { ProductDeactivatedEvent } from '../events/product-deactivated.event';
 import { ProductCreatedEvent } from '../events/product-created.event';
 import { ProductUpdatedEvent } from '../events/product-updated.event';
 import { Money } from '../value-objects/money.vo';
-import { InvalidProductError, ProductAlreadyDeactivatedError } from '../errors/product.errors';
 
 export type ProductDomainEvent =
   | ProductCreatedEvent
@@ -23,7 +23,6 @@ type ProductProps = {
 
 type ProductCreateInput = {
   id: string;
-  operationId: string;
   name: string;
   establishmentId: string;
   description?: string;
@@ -33,7 +32,6 @@ type ProductCreateInput = {
 };
 
 type ProductUpdateInput = {
-  operationId: string;
   name?: string;
   description?: string;
   price?: Money;
@@ -50,10 +48,6 @@ type ProductRestoreInput = {
   categoryId: string;
   createdAt: Date;
   updatedAt: Date;
-};
-
-type ProductDeactivateInput = {
-  operationId: string;
 };
 
 export class ProductEntity {
@@ -122,7 +116,6 @@ export class ProductEntity {
       type: 'product.created',
       occurredAt: now,
       payload: {
-        operationId: input.operationId,
         productId: product.id,
         establishmentId: product.establishmentId,
         productCategoryId: input.categoryId,
@@ -169,7 +162,6 @@ export class ProductEntity {
       type: 'product.updated',
       occurredAt: now,
       payload: {
-        operationId: input.operationId,
         establishmentId: product.establishmentId,
         productId: this.id,
         productCategoryId: product.categoryId,
@@ -183,7 +175,7 @@ export class ProductEntity {
     return product;
   }
 
-  deactivate(props: ProductDeactivateInput): ProductEntity {
+  deactivate(): ProductEntity {
     if (!this.isAvailable) throw new ProductAlreadyDeactivatedError(this.id);
 
     const now = new Date();
@@ -204,7 +196,6 @@ export class ProductEntity {
       type: 'product.deactivated',
       occurredAt: now,
       payload: {
-        operationId: props.operationId,
         establishmentId: product.establishmentId,
         productId: this.id,
       },
