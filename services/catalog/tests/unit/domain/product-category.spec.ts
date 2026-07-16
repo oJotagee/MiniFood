@@ -1,13 +1,12 @@
 import { describe, expect, it } from 'bun:test';
 
-import { InvalidProductCategoryError } from '../../../src/domain/errors/product-category.errors';
-import { ProductCategoryEntity } from '../../../src/domain/entities/product-category.entity';
+import { InvalidProductCategoryError } from '@/domain/errors/product-category.errors';
+import { ProductCategoryEntity } from '@/domain/entities/product-category.entity';
 
 describe('ProductCategoryEntity', () => {
   it('creates a valid product category', () => {
     const category = ProductCategoryEntity.create({
       id: 'category-1',
-      operationId: 'operation-1',
       name: 'Burgers',
       establishmentId: 'establishment-1',
     });
@@ -20,12 +19,11 @@ describe('ProductCategoryEntity', () => {
   it('updates category name without changing identity', () => {
     const category = ProductCategoryEntity.create({
       id: 'category-1',
-      operationId: 'operation-1',
       name: 'Burgers',
       establishmentId: 'establishment-1',
     });
 
-    const updated = category.update({ operationId: 'operation-2', name: 'Combos' });
+    const updated = category.update({ name: 'Combos' });
 
     expect(updated.id).toBe(category.id);
     expect(updated.name).toBe('Combos');
@@ -36,7 +34,6 @@ describe('ProductCategoryEntity', () => {
     expect(() =>
       ProductCategoryEntity.create({
         id: 'category-1',
-        operationId: 'operation-1',
         name: '',
         establishmentId: 'establishment-1',
       }),
@@ -46,7 +43,6 @@ describe('ProductCategoryEntity', () => {
   it('records and pulls category creation events once', () => {
     const category = ProductCategoryEntity.create({
       id: 'category-1',
-      operationId: 'operation-1',
       name: 'Burgers',
       establishmentId: 'establishment-1',
     });
@@ -56,7 +52,6 @@ describe('ProductCategoryEntity', () => {
         type: 'product.category.created',
         occurredAt: category.createdAt,
         payload: {
-          operationId: 'operation-1',
           categoryId: 'category-1',
           establishmentId: 'establishment-1',
           name: 'Burgers',
@@ -69,20 +64,18 @@ describe('ProductCategoryEntity', () => {
   it('records category update events', () => {
     const category = ProductCategoryEntity.create({
       id: 'category-1',
-      operationId: 'operation-1',
       name: 'Burgers',
       establishmentId: 'establishment-1',
     });
     category.pullDomainEvents();
 
-    const updated = category.update({ operationId: 'operation-2', name: 'Combos' });
+    const updated = category.update({ name: 'Combos' });
 
     expect(updated.pullDomainEvents()).toEqual([
       {
         type: 'product.category.updated',
         occurredAt: updated.updatedAt,
         payload: {
-          operationId: 'operation-2',
           categoryId: 'category-1',
           establishmentId: 'establishment-1',
           name: 'Combos',

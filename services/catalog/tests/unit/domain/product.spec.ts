@@ -1,17 +1,16 @@
 import { describe, expect, it } from 'bun:test';
 
-import { Money } from '../../../src/domain/value-objects/money.vo';
+import { ProductEntity } from '@/domain/entities/product.entity';
+import { Money } from '@/domain/value-objects/money.vo';
 import {
   InvalidProductError,
   ProductAlreadyDeactivatedError,
-} from '../../../src/domain/errors/product.errors';
-import { ProductEntity } from '../../../src/domain/entities/product.entity';
+} from '@/domain/errors/product.errors';
 
 describe('ProductEntity', () => {
   it('creates a product with Money price', () => {
     const product = ProductEntity.create({
       id: 'product-1',
-      operationId: 'operation-1',
       name: 'Cheeseburger',
       establishmentId: 'establishment-1',
       price: Money.fromCents('2590'),
@@ -25,14 +24,13 @@ describe('ProductEntity', () => {
   it('updates product price using Money', () => {
     const product = ProductEntity.create({
       id: 'product-1',
-      operationId: 'operation-1',
       name: 'Cheeseburger',
       establishmentId: 'establishment-1',
       price: Money.fromCents('2590'),
       categoryId: 'category-1',
     });
 
-    const updated = product.update({ operationId: 'operation-2', price: Money.fromCents('2990') });
+    const updated = product.update({ price: Money.fromCents('2990') });
 
     expect(updated.priceCents).toBe(2990n);
     expect(product.priceCents).toBe(2590n);
@@ -41,17 +39,16 @@ describe('ProductEntity', () => {
   it('deactivates a product once', () => {
     const product = ProductEntity.create({
       id: 'product-1',
-      operationId: 'operation-1',
       name: 'Cheeseburger',
       establishmentId: 'establishment-1',
       price: Money.fromCents('2590'),
       categoryId: 'category-1',
     });
 
-    const deactivated = product.deactivate({ operationId: 'operation-2' });
+    const deactivated = product.deactivate();
 
     expect(deactivated.isAvailable).toBe(false);
-    expect(() => deactivated.deactivate({ operationId: 'operation-3' })).toThrow(
+    expect(() => deactivated.deactivate()).toThrow(
       ProductAlreadyDeactivatedError,
     );
   });
@@ -60,7 +57,6 @@ describe('ProductEntity', () => {
     expect(() =>
       ProductEntity.create({
         id: 'product-1',
-        operationId: 'operation-1',
         name: 'Cheeseburger',
         establishmentId: 'establishment-1',
         price: Money.fromCents('2590'),
@@ -72,7 +68,6 @@ describe('ProductEntity', () => {
   it('records and pulls product creation events once', () => {
     const product = ProductEntity.create({
       id: 'product-1',
-      operationId: 'operation-1',
       name: 'Cheeseburger',
       establishmentId: 'establishment-1',
       price: Money.fromCents('2590'),
@@ -84,7 +79,6 @@ describe('ProductEntity', () => {
         type: 'product.created',
         occurredAt: product.createdAt,
         payload: {
-          operationId: 'operation-1',
           productId: 'product-1',
           establishmentId: 'establishment-1',
           productCategoryId: 'category-1',
@@ -99,6 +93,9 @@ describe('ProductEntity', () => {
   });
 
   it('restores a product without recording domain events', () => {
+    const createdAt = new Date('2026-01-01T00:00:00.000Z');
+    const updatedAt = new Date('2026-01-02T00:00:00.000Z');
+
     const product = ProductEntity.restore({
       id: 'product-1',
       name: 'Cheeseburger',
@@ -106,17 +103,18 @@ describe('ProductEntity', () => {
       price: Money.fromCents('2590'),
       isAvailable: true,
       categoryId: 'category-1',
-      createdAt: new Date('2026-01-01T00:00:00.000Z'),
-      updatedAt: new Date('2026-01-02T00:00:00.000Z'),
+      createdAt,
+      updatedAt,
     });
 
+    expect(product.createdAt).toBe(createdAt);
+    expect(product.updatedAt).toBe(updatedAt);
     expect(product.pullDomainEvents()).toEqual([]);
   });
 
   it('records only product deactivation event when deactivating', () => {
     const product = ProductEntity.create({
       id: 'product-1',
-      operationId: 'operation-1',
       name: 'Cheeseburger',
       establishmentId: 'establishment-1',
       price: Money.fromCents('2590'),
@@ -124,7 +122,7 @@ describe('ProductEntity', () => {
     });
     product.pullDomainEvents();
 
-    const deactivated = product.deactivate({ operationId: 'operation-2' });
+    const deactivated = product.deactivate();
     const events = deactivated.pullDomainEvents();
 
     expect(events).toHaveLength(1);
