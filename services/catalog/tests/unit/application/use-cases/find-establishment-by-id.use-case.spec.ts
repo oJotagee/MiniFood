@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'bun:test';
 
-import { FindEstablishmentByIdUseCase } from '../../../../src/application/use-cases/find-establishment-by-id.use-case';
-import { CreateEstablishmentUseCase } from '../../../../src/application/use-cases/create-establishment.use-case';
+import { FindEstablishmentByIdUseCase } from '../../../../src/application/use-cases/establishment/find-establishment-by-id.use-case';
+import { CreateEstablishmentUseCase } from '../../../../src/application/use-cases/establishment/create-establishment.use-case';
 import { InMemoryEstablishmentRepository } from '../../support/in-memory-establishment.repository';
 import { EstablishmentNotFoundError } from '../../../../src/domain/errors/establishment.error';
 

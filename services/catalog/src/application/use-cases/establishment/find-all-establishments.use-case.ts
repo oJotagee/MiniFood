@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 
-import type { EstablishmentRepository } from '../ports/establishment-repository.port';
-import { ESTABLISHMENT_REPOSITORY } from '../ports/establishment-repository.port';
+import type { EstablishmentRepository } from '../../ports/establishment-repository.port';
+import { ESTABLISHMENT_REPOSITORY } from '../../ports/establishment-repository.port';
 
 type FindAllEstablishmentsInput = {
   ownerId: string;

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'bun:test';
 
-import { CreateEstablishmentUseCase } from '../../../../src/application/use-cases/create-establishment.use-case';
+import { CreateEstablishmentUseCase } from '../../../../src/application/use-cases/establishment/create-establishment.use-case';
 import { InMemoryEstablishmentRepository } from '../../support/in-memory-establishment.repository';
 
 const address = {
