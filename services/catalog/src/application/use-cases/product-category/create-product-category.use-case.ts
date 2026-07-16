@@ -31,7 +31,7 @@ export class CreateProductCategoryUseCase {
 
     @Inject(ESTABLISHMENT_REPOSITORY)
     private readonly establishments: EstablishmentRepository,
-  ) { }
+  ) {}
 
   async execute(input: CreateProductCategoryInput): Promise<CreateProductCategoryOutput> {
     const establishment = await this.establishments.findById(input.establishmentId);
