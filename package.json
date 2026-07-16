@@ -11,6 +11,7 @@
     "docker:down": "docker compose down",
     "docker:prune": "docker compose down -v --remove-orphans",
     "test": "bun test",
+    "test:coverage": "bun test --coverage",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "prisma:migrate:dev:catalog": "bun prisma migrate dev --config services/catalog/prisma.config.ts",
     "prisma:generate:catalog": "bunx prisma generate --config services/catalog/prisma.config.ts",
