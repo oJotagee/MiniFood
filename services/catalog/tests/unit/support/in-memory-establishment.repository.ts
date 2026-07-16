@@ -1,5 +1,5 @@
-import type { EstablishmentRepository } from '../../../src/application/ports/establishment-repository.port';
-import { EstablishmentEntity } from '../../../src/domain/entities/establishment.entity';
+import type { EstablishmentRepository } from '@/application/ports/establishment-repository.port';
+import { EstablishmentEntity } from '@/domain/entities/establishment.entity';
 
 export class InMemoryEstablishmentRepository implements EstablishmentRepository {
   private readonly establishments = new Map<string, EstablishmentEntity>();

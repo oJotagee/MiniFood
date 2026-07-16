@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'bun:test';
 
-import { EstablishmentMapper } from '../../../../src/infrastructure/persistence/establishment.mapper';
-import { EstablishmentEntity } from '../../../../src/domain/entities/establishment.entity';
-import { Address } from '../../../../src/domain/value-objects/address.vo';
+import { EstablishmentMapper } from '@/infrastructure/persistence/establishment.mapper';
+import { EstablishmentEntity } from '@/domain/entities/establishment.entity';
+import { Address } from '@/domain/value-objects/address.vo';
 
 const address = Address.create({
   street: 'Main St',

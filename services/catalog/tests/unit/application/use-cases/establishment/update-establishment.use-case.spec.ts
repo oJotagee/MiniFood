@@ -1,12 +1,12 @@
 import { beforeEach, describe, expect, it } from 'bun:test';
 
-import { UpdateEstablishmentUseCase } from '../../../../src/application/use-cases/establishment/update-establishment.use-case';
-import { CreateEstablishmentUseCase } from '../../../../src/application/use-cases/establishment/create-establishment.use-case';
-import { InMemoryEstablishmentRepository } from '../../support/in-memory-establishment.repository';
+import { UpdateEstablishmentUseCase } from '@/application/use-cases/establishment/update-establishment.use-case';
+import { CreateEstablishmentUseCase } from '@/application/use-cases/establishment/create-establishment.use-case';
+import { InMemoryEstablishmentRepository } from '@tests/unit/support/in-memory-establishment.repository';
 import {
   EstablishmentNotFoundError,
   EstablishmentNotOwnedError,
-} from '../../../../src/domain/errors/establishment.error';
+} from '@/domain/errors/establishment.error';
 
 const address = {
   street: 'Main St',

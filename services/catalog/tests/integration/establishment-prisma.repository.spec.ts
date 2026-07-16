@@ -3,11 +3,11 @@ import { config } from 'dotenv';
 
 config({ path: `${import.meta.dir}/../../.env` });
 
-import { EstablishmentPrismaRepository } from '../../src/infrastructure/repositories/establishment-prisma.repository';
-import { EstablishmentNotFoundError } from '../../src/domain/errors/establishment.error';
-import { EstablishmentEntity } from '../../src/domain/entities/establishment.entity';
-import { PrismaService } from '../../src/infrastructure/prisma/prisma.service';
-import { Address } from '../../src/domain/value-objects/address.vo';
+import { EstablishmentPrismaRepository } from '@/infrastructure/repositories/establishment-prisma.repository';
+import { EstablishmentNotFoundError } from '@/domain/errors/establishment.error';
+import { EstablishmentEntity } from '@/domain/entities/establishment.entity';
+import { PrismaService } from '@/infrastructure/prisma/prisma.service';
+import { Address } from '@/domain/value-objects/address.vo';
 
 const address = Address.create({
   street: 'Main St',

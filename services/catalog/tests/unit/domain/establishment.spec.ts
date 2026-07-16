@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'bun:test';
 
-import { InvalidEstablishmentDataError } from '../../../src/domain/errors/establishment.error';
-import { EstablishmentEntity } from '../../../src/domain/entities/establishment.entity';
-import { Address } from '../../../src/domain/value-objects/address.vo';
+import { InvalidEstablishmentDataError } from '@/domain/errors/establishment.error';
+import { EstablishmentEntity } from '@/domain/entities/establishment.entity';
+import { Address } from '@/domain/value-objects/address.vo';
 
 const address = Address.create({
   street: 'Main St',

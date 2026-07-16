@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it } from 'bun:test';
 
-import { FindEstablishmentByIdUseCase } from '../../../../src/application/use-cases/establishment/find-establishment-by-id.use-case';
-import { CreateEstablishmentUseCase } from '../../../../src/application/use-cases/establishment/create-establishment.use-case';
-import { InMemoryEstablishmentRepository } from '../../support/in-memory-establishment.repository';
-import { EstablishmentNotFoundError } from '../../../../src/domain/errors/establishment.error';
+import { FindEstablishmentByIdUseCase } from '@/application/use-cases/establishment/find-establishment-by-id.use-case';
+import { CreateEstablishmentUseCase } from '@/application/use-cases/establishment/create-establishment.use-case';
+import { InMemoryEstablishmentRepository } from '@tests/unit/support/in-memory-establishment.repository';
+import { EstablishmentNotFoundError } from '@/domain/errors/establishment.error';
 
 const address = {
   street: 'Main St',
