@@ -48,9 +48,7 @@ describe('ProductEntity', () => {
     const deactivated = product.deactivate();
 
     expect(deactivated.isAvailable).toBe(false);
-    expect(() => deactivated.deactivate()).toThrow(
-      ProductAlreadyDeactivatedError,
-    );
+    expect(() => deactivated.deactivate()).toThrow(ProductAlreadyDeactivatedError);
   });
 
   it('rejects product without category', () => {
