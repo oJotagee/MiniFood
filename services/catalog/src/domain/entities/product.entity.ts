@@ -13,7 +13,6 @@ type ProductProps = {
   id: string;
   name: string;
   description?: string;
-  establishmentId: string;
   price: Money;
   isAvailable: boolean;
   categoryId: string;
@@ -24,7 +23,6 @@ type ProductProps = {
 type ProductCreateInput = {
   id: string;
   name: string;
-  establishmentId: string;
   description?: string;
   price: Money;
   isAvailable?: boolean;
@@ -41,7 +39,6 @@ type ProductUpdateInput = {
 type ProductRestoreInput = {
   id: string;
   name: string;
-  establishmentId: string;
   description?: string;
   price: Money;
   isAvailable: boolean;
@@ -67,10 +64,6 @@ export class ProductEntity {
 
   get description(): string | undefined {
     return this.productProps.description;
-  }
-
-  get establishmentId(): string {
-    return this.productProps.establishmentId;
   }
 
   get price(): Money {
@@ -103,7 +96,6 @@ export class ProductEntity {
     const product = new ProductEntity({
       id: input.id,
       name: input.name.trim(),
-      establishmentId: input.establishmentId,
       description: input.description?.trim() || undefined,
       price: input.price,
       isAvailable: input.isAvailable ?? true,
@@ -117,7 +109,6 @@ export class ProductEntity {
       occurredAt: now,
       payload: {
         productId: product.id,
-        establishmentId: product.establishmentId,
         productCategoryId: input.categoryId,
         name: product.name,
         description: product.description,
@@ -133,7 +124,6 @@ export class ProductEntity {
     return new ProductEntity({
       id: input.id,
       name: input.name.trim(),
-      establishmentId: input.establishmentId,
       description: input.description?.trim() || undefined,
       price: input.price,
       isAvailable: input.isAvailable,
@@ -150,7 +140,6 @@ export class ProductEntity {
       id: this.id,
       name: input.name ?? this.name,
       description: input.description || this.description,
-      establishmentId: this.establishmentId,
       price: input.price ?? this.price,
       isAvailable: this.isAvailable,
       categoryId: input.categoryId ?? this.categoryId,
@@ -162,7 +151,6 @@ export class ProductEntity {
       type: 'product.updated',
       occurredAt: now,
       payload: {
-        establishmentId: product.establishmentId,
         productId: this.id,
         productCategoryId: product.categoryId,
         name: product.name,
@@ -184,7 +172,6 @@ export class ProductEntity {
       id: this.id,
       name: this.name,
       description: this.description,
-      establishmentId: this.establishmentId,
       price: this.price,
       isAvailable: false,
       categoryId: this.categoryId,
@@ -196,7 +183,6 @@ export class ProductEntity {
       type: 'product.deactivated',
       occurredAt: now,
       payload: {
-        establishmentId: product.establishmentId,
         productId: this.id,
       },
     });
@@ -207,8 +193,6 @@ export class ProductEntity {
   private static validate(props: ProductProps): void {
     if (!props.id.trim()) throw new InvalidProductError('Product id must be provided.');
     if (!props.name.trim()) throw new InvalidProductError('Product name must be provided.');
-    if (!props.establishmentId.trim())
-      throw new InvalidProductError('Establishment id must be provided.');
     if (!props.categoryId.trim())
       throw new InvalidProductError('Product category id must be provided.');
   }

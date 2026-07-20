@@ -3,7 +3,6 @@ export type ProductCreatedEvent = {
   occurredAt: Date;
   payload: {
     productId: string;
-    establishmentId: string;
     productCategoryId: string;
     name: string;
     description?: string;

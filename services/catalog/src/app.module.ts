@@ -10,8 +10,15 @@ import { ProductCategoryPrismaRepository } from './infrastructure/repositories/p
 import { CreateEstablishmentUseCase } from './application/use-cases/establishment/create-establishment.use-case';
 import { UpdateEstablishmentUseCase } from './application/use-cases/establishment/update-establishment.use-case';
 import { EstablishmentPrismaRepository } from './infrastructure/repositories/establishment-prisma.repository';
+import { DesactivateProductUseCase } from './application/use-cases/product/desactive-product.use-case';
+import { FindProductByIdUseCase } from './application/use-cases/product/find-product-by-id.use-case';
+import { FindAllProductsUseCase } from './application/use-cases/product/find-all-product.use-case';
 import { PRODUCT_CATEGORY_REPOSITORY } from './application/ports/product-category-repository.port';
+import { ProductPrismaRepository } from './infrastructure/repositories/product-prisma.repository';
+import { CreateProductUseCase } from './application/use-cases/product/create-product.use-case';
+import { UpdateProductUseCase } from './application/use-cases/product/update-product.use-case';
 import { ESTABLISHMENT_REPOSITORY } from './application/ports/establishment-repository.port';
+import { PRODUCT_REPOSITORY } from './application/ports/product-repository.port';
 import { PrismaService } from './infrastructure/prisma/prisma.service';
 
 @Module({
@@ -37,6 +44,16 @@ import { PrismaService } from './infrastructure/prisma/prisma.service';
       provide: PRODUCT_CATEGORY_REPOSITORY,
       useClass: ProductCategoryPrismaRepository,
     },
+    // PRODUCT_USE_CASES
+    FindAllProductsUseCase,
+    FindProductByIdUseCase,
+    CreateProductUseCase,
+    UpdateProductUseCase,
+    DesactivateProductUseCase,
+    {
+      provide: PRODUCT_REPOSITORY,
+      useClass: ProductPrismaRepository,
+    },
   ],
 })
-export class AppModule {}
+export class AppModule { }
