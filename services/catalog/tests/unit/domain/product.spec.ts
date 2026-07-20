@@ -12,7 +12,6 @@ describe('ProductEntity', () => {
     const product = ProductEntity.create({
       id: 'product-1',
       name: 'Cheeseburger',
-      establishmentId: 'establishment-1',
       price: Money.fromCents('2590'),
       categoryId: 'category-1',
     });
@@ -25,7 +24,6 @@ describe('ProductEntity', () => {
     const product = ProductEntity.create({
       id: 'product-1',
       name: 'Cheeseburger',
-      establishmentId: 'establishment-1',
       price: Money.fromCents('2590'),
       categoryId: 'category-1',
     });
@@ -40,7 +38,6 @@ describe('ProductEntity', () => {
     const product = ProductEntity.create({
       id: 'product-1',
       name: 'Cheeseburger',
-      establishmentId: 'establishment-1',
       price: Money.fromCents('2590'),
       categoryId: 'category-1',
     });
@@ -56,7 +53,6 @@ describe('ProductEntity', () => {
       ProductEntity.create({
         id: 'product-1',
         name: 'Cheeseburger',
-        establishmentId: 'establishment-1',
         price: Money.fromCents('2590'),
         categoryId: '',
       }),
@@ -67,7 +63,6 @@ describe('ProductEntity', () => {
     const product = ProductEntity.create({
       id: 'product-1',
       name: 'Cheeseburger',
-      establishmentId: 'establishment-1',
       price: Money.fromCents('2590'),
       categoryId: 'category-1',
     });
@@ -78,7 +73,6 @@ describe('ProductEntity', () => {
         occurredAt: product.createdAt,
         payload: {
           productId: 'product-1',
-          establishmentId: 'establishment-1',
           productCategoryId: 'category-1',
           name: 'Cheeseburger',
           description: undefined,
@@ -97,7 +91,6 @@ describe('ProductEntity', () => {
     const product = ProductEntity.restore({
       id: 'product-1',
       name: 'Cheeseburger',
-      establishmentId: 'establishment-1',
       price: Money.fromCents('2590'),
       isAvailable: true,
       categoryId: 'category-1',
@@ -114,7 +107,6 @@ describe('ProductEntity', () => {
     const product = ProductEntity.create({
       id: 'product-1',
       name: 'Cheeseburger',
-      establishmentId: 'establishment-1',
       price: Money.fromCents('2590'),
       categoryId: 'category-1',
     });
