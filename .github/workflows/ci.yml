@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  test:
+    name: Tests and build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Generate Prisma clients
+        run: bun run prisma:generate:catalog
+        env:
+          DATABASE_URL: postgresql://admin:admin@localhost:5432/postgres
+
+      - name: Typecheck services
+        run: |
+          bunx tsc --noEmit -p services/catalog/tsconfig.json
+
+      - name: Unit tests
+        run: bun run test:unit

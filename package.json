@@ -14,6 +14,7 @@
     "docker:dev:down": "docker compose -f docker-compose.dev.yml down",
     "docker:dev:prune": "docker compose -f docker-compose.dev.yml down -v --remove-orphans",
     "test": "bun test",
+    "test:unit": "bun test services/catalog/tests/unit",
     "test:coverage": "bun test --coverage",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "prisma:migrate:dev:catalog": "bun prisma migrate dev --config services/catalog/prisma.config.ts",
