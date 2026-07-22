@@ -6,6 +6,12 @@
   "exports": {
     ".": "./src/index.ts",
     "./events": "./src/events/index.ts",
-    "./auth": "./src/auth/index.ts"
+    "./auth": "./src/auth/index.ts",
+    "./common": "./src/common/index.ts"
+  },
+  "dependencies": {
+    "@nestjs/swagger": "^11.4.4",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.15.1"
   }
 }
