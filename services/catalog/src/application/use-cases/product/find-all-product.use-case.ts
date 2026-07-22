@@ -35,7 +35,7 @@ export class FindAllProductsUseCase {
   constructor(
     @Inject(PRODUCT_REPOSITORY)
     private readonly productRepository: ProductRepository,
-  ) { }
+  ) {}
 
   async execute(input: FindAllProductInput): Promise<FindAllProductsOutput> {
     const limit =

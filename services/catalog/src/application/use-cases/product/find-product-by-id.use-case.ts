@@ -20,7 +20,7 @@ export class FindProductByIdUseCase {
   constructor(
     @Inject(PRODUCT_REPOSITORY)
     private readonly products: ProductRepository,
-  ) { }
+  ) {}
 
   async execute(input: { id: string }): Promise<FindProductByIdOutput> {
     const product = await this.products.findById(input.id);

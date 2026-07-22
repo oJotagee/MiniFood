@@ -13,9 +13,7 @@ export class InMemoryProductRepository implements ProductRepository {
     limit: number;
     offset: number;
   }): Promise<{ data: ProductEntity[]; total: number }> {
-    const all = [...this.products.values()].filter((product) =>
-      product.name.includes(params.name),
-    );
+    const all = [...this.products.values()].filter((product) => product.name.includes(params.name));
 
     return {
       data: all.slice(params.offset, params.offset + params.limit),

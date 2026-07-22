@@ -25,7 +25,7 @@ export class DesactivateProductUseCase {
   constructor(
     @Inject(PRODUCT_REPOSITORY)
     private readonly products: ProductRepository,
-  ) { }
+  ) {}
 
   async execute(input: DesactivateProductInput): Promise<DesactivateProductOutput> {
     const product = await this.products.findById(input.id);

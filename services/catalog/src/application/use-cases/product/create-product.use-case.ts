@@ -29,7 +29,7 @@ export class CreateProductUseCase {
   constructor(
     @Inject(PRODUCT_REPOSITORY)
     private readonly products: ProductRepository,
-  ) { }
+  ) {}
 
   async execute(input: CreateProductInput): Promise<ProductsOutput> {
     const product = ProductEntity.create({

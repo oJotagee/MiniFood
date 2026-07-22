@@ -1,14 +1,14 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable } from '@nestjs/common';
 
-import { ProductRepository } from "@/application/ports/product-repository.port";
-import { ProductNotFoundError } from "@/domain/errors/product.errors";
-import { ProductEntity } from "@/domain/entities/product.entity";
-import { ProductMapper } from "../persistence/product.mapper";
-import { PrismaService } from "../prisma/prisma.service";
+import { ProductRepository } from '@/application/ports/product-repository.port';
+import { ProductNotFoundError } from '@/domain/errors/product.errors';
+import { ProductEntity } from '@/domain/entities/product.entity';
+import { ProductMapper } from '../persistence/product.mapper';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class ProductPrismaRepository implements ProductRepository {
-  constructor(private readonly prismaService: PrismaService) { }
+  constructor(private readonly prismaService: PrismaService) {}
 
   async findById(id: string): Promise<ProductEntity | null> {
     const product = await this.prismaService.product.findUnique({

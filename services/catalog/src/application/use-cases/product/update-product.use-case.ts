@@ -30,7 +30,7 @@ export class UpdateProductUseCase {
   constructor(
     @Inject(PRODUCT_REPOSITORY)
     private readonly products: ProductRepository,
-  ) { }
+  ) {}
 
   async execute(input: UpdateProductInput): Promise<UpdateProductOutput> {
     const product = await this.products.findById(input.id);
