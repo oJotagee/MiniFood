@@ -1,8 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
 
+import {
+  EstablishmentNotFoundError,
+  EstablishmentNotOwnedError,
+} from '@/domain/errors/establishment.error';
 import type { EstablishmentRepository } from '../../ports/establishment-repository.port';
 import { ESTABLISHMENT_REPOSITORY } from '../../ports/establishment-repository.port';
-import { EstablishmentNotFoundError } from '@/domain/errors/establishment.error';
 
 type AddressOutput = {
   street: string;
@@ -31,10 +34,18 @@ export class FindEstablishmentByIdUseCase {
     private readonly establishments: EstablishmentRepository,
   ) {}
 
-  async execute(input: { id: string }): Promise<FindEstablishmentByIdOutput> {
-    const establishment = await this.establishments.findById(input.id);
+  async execute({
+    id,
+    requesterId,
+  }: {
+    id: string;
+    requesterId: string;
+  }): Promise<FindEstablishmentByIdOutput> {
+    const establishment = await this.establishments.findById(id);
 
-    if (!establishment) throw new EstablishmentNotFoundError(input.id);
+    if (!establishment) throw new EstablishmentNotFoundError(id);
+
+    if (establishment.ownerId !== requesterId) throw new EstablishmentNotOwnedError(id);
 
     return {
       id: establishment.id,

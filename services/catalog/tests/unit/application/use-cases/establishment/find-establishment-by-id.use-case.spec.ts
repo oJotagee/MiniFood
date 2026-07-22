@@ -3,7 +3,10 @@ import { beforeEach, describe, expect, it } from 'bun:test';
 import { FindEstablishmentByIdUseCase } from '@/application/use-cases/establishment/find-establishment-by-id.use-case';
 import { CreateEstablishmentUseCase } from '@/application/use-cases/establishment/create-establishment.use-case';
 import { InMemoryEstablishmentRepository } from '@tests/unit/support/in-memory-establishment.repository';
-import { EstablishmentNotFoundError } from '@/domain/errors/establishment.error';
+import {
+  EstablishmentNotFoundError,
+  EstablishmentNotOwnedError,
+} from '@/domain/errors/establishment.error';
 
 const address = {
   street: 'Main St',
@@ -32,15 +35,27 @@ describe('FindEstablishmentByIdUseCase', () => {
       address,
     });
 
-    const found = await findByIdUseCase.execute({ id: created.id });
+    const found = await findByIdUseCase.execute({ id: created.id, requesterId: 'owner-1' });
 
     expect(found.id).toBe(created.id);
     expect(found.name).toBe('Mini Food');
   });
 
   it('throws when the establishment does not exist', async () => {
-    await expect(findByIdUseCase.execute({ id: 'missing-id' })).rejects.toThrow(
-      EstablishmentNotFoundError,
-    );
+    await expect(
+      findByIdUseCase.execute({ id: 'missing-id', requesterId: 'owner-1' }),
+    ).rejects.toThrow(EstablishmentNotFoundError);
+  });
+
+  it('throws when the requester does not own the establishment', async () => {
+    const created = await createUseCase.execute({
+      name: 'Mini Food',
+      ownerId: 'owner-1',
+      address,
+    });
+
+    await expect(
+      findByIdUseCase.execute({ id: created.id, requesterId: 'someone-else' }),
+    ).rejects.toThrow(EstablishmentNotOwnedError);
   });
 });
