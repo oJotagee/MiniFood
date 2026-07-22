@@ -3,7 +3,9 @@
     "types": [
       "bun-types",
       "node"
-    ]
+    ],
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true
   },
   "files": [],
   "references": [
