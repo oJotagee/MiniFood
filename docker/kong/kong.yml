@@ -2,7 +2,7 @@ _format_version: "3.0"
 
 services:
   - name: catalog-service
-    url: http://games:4001
+    url: http://catalog:4001
     routes:
       - name: catalog-routes
         paths:
@@ -10,7 +10,7 @@ services:
         strip_path: true
 
   - name: order-service
-    url: http://orders:4002
+    url: http://order:4002
     routes:
       - name: order-routes
         paths:
