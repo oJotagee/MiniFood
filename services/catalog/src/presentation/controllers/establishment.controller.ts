@@ -43,7 +43,7 @@ export class EstablishmentController {
   })
   @ApiOkResponse({
     description: 'Lista de estabelecimentos',
-    type: [PaginatedEstablishmentResponseDto],
+    type: PaginatedEstablishmentResponseDto,
   })
   findAllEstablishments(
     @Query() filter: FilterEstablishmentDto,
