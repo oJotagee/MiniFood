@@ -2,25 +2,60 @@ import { beforeEach, describe, expect, it } from 'bun:test';
 
 import { FindAllProductsUseCase } from '@/application/use-cases/product/find-all-product.use-case';
 import { CreateProductUseCase } from '@/application/use-cases/product/create-product.use-case';
+import { CreateProductCategoryUseCase } from '@/application/use-cases/product-category/create-product-category.use-case';
+import { CreateEstablishmentUseCase } from '@/application/use-cases/establishment/create-establishment.use-case';
 import { InMemoryProductRepository } from '@tests/unit/support/in-memory-product.repository';
+import { InMemoryProductCategoryRepository } from '@tests/unit/support/in-memory-product-category.repository';
+import { InMemoryEstablishmentRepository } from '@tests/unit/support/in-memory-establishment.repository';
 import { Money } from '@/domain/value-objects/money.vo';
+
+const address = {
+  street: 'Main St',
+  number: '100',
+  neighborhood: 'Center',
+  city: 'Sao Paulo',
+  state: 'SP',
+  zipCode: '01000-000',
+};
 
 describe('FindAllProductsUseCase', () => {
   let products: InMemoryProductRepository;
+  let productCategories: InMemoryProductCategoryRepository;
+  let establishments: InMemoryEstablishmentRepository;
   let createProductUseCase: CreateProductUseCase;
   let findAllUseCase: FindAllProductsUseCase;
+  let categoryId: string;
 
   beforeEach(async () => {
     products = new InMemoryProductRepository();
-    createProductUseCase = new CreateProductUseCase(products);
+    productCategories = new InMemoryProductCategoryRepository();
+    establishments = new InMemoryEstablishmentRepository();
+    const createEstablishmentUseCase = new CreateEstablishmentUseCase(establishments);
+    const createProductCategoryUseCase = new CreateProductCategoryUseCase(
+      productCategories,
+      establishments,
+    );
+    createProductUseCase = new CreateProductUseCase(products, productCategories, establishments);
     findAllUseCase = new FindAllProductsUseCase(products);
+
+    const establishment = await createEstablishmentUseCase.execute({
+      name: 'Mini Food',
+      ownerId: 'owner-1',
+      address,
+    });
+    const category = await createProductCategoryUseCase.execute({
+      name: 'Burgers',
+      establishmentId: establishment.id,
+      requesterId: 'owner-1',
+    });
+    categoryId = category.id;
 
     for (let i = 0; i < 15; i++) {
       await createProductUseCase.execute({
         name: `Product ${i}`,
         description: undefined,
         priceCents: Money.fromCents('1000'),
-        categoryId: 'category-1',
+        categoryId,
         requesterId: 'owner-1',
       });
     }
@@ -43,7 +78,7 @@ describe('FindAllProductsUseCase', () => {
       name: 'Cheeseburger',
       description: undefined,
       priceCents: Money.fromCents('1000'),
-      categoryId: 'category-1',
+      categoryId,
       requesterId: 'owner-1',
     });
 

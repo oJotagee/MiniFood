@@ -6,6 +6,7 @@ import { CreateEstablishmentUseCase } from '@/application/use-cases/establishmen
 import { InMemoryProductCategoryRepository } from '@tests/unit/support/in-memory-product-category.repository';
 import { InMemoryEstablishmentRepository } from '@tests/unit/support/in-memory-establishment.repository';
 import { ProductCategoryNotFoundError } from '@/domain/errors/product-category.errors';
+import { EstablishmentNotOwnedError } from '@/domain/errors/establishment.error';
 
 const address = {
   street: 'Main St',
@@ -31,7 +32,7 @@ describe('FindProductCategoryByIdUseCase', () => {
       productCategories,
       establishments,
     );
-    findByIdUseCase = new FindProductCategoryByIdUseCase(productCategories);
+    findByIdUseCase = new FindProductCategoryByIdUseCase(productCategories, establishments);
   });
 
   it('returns the product category when it exists', async () => {
@@ -47,15 +48,33 @@ describe('FindProductCategoryByIdUseCase', () => {
       requesterId: 'owner-1',
     });
 
-    const found = await findByIdUseCase.execute({ id: created.id });
+    const found = await findByIdUseCase.execute({ id: created.id, requesterId: 'owner-1' });
 
     expect(found.id).toBe(created.id);
     expect(found.name).toBe('Burgers');
   });
 
   it('throws when the product category does not exist', async () => {
-    await expect(findByIdUseCase.execute({ id: 'missing-id' })).rejects.toThrow(
-      ProductCategoryNotFoundError,
-    );
+    await expect(
+      findByIdUseCase.execute({ id: 'missing-id', requesterId: 'owner-1' }),
+    ).rejects.toThrow(ProductCategoryNotFoundError);
+  });
+
+  it('throws when the requester is not the establishment owner', async () => {
+    const establishment = await createEstablishmentUseCase.execute({
+      name: 'Mini Food',
+      ownerId: 'owner-1',
+      address,
+    });
+
+    const created = await createProductCategoryUseCase.execute({
+      name: 'Burgers',
+      establishmentId: establishment.id,
+      requesterId: 'owner-1',
+    });
+
+    await expect(
+      findByIdUseCase.execute({ id: created.id, requesterId: 'someone-else' }),
+    ).rejects.toThrow(EstablishmentNotOwnedError);
   });
 });

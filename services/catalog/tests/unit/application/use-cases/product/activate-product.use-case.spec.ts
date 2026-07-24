@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'bun:test';
 
+import { ActivateProductUseCase } from '@/application/use-cases/product/activate-product.use-case';
 import { DesactivateProductUseCase } from '@/application/use-cases/product/desactive-product.use-case';
 import { CreateProductUseCase } from '@/application/use-cases/product/create-product.use-case';
 import { CreateProductCategoryUseCase } from '@/application/use-cases/product-category/create-product-category.use-case';
@@ -8,7 +9,7 @@ import { InMemoryProductRepository } from '@tests/unit/support/in-memory-product
 import { InMemoryProductCategoryRepository } from '@tests/unit/support/in-memory-product-category.repository';
 import { InMemoryEstablishmentRepository } from '@tests/unit/support/in-memory-establishment.repository';
 import {
-  ProductAlreadyDeactivatedError,
+  ProductAlreadyActivatedError,
   ProductNotFoundError,
 } from '@/domain/errors/product.errors';
 import { EstablishmentNotOwnedError } from '@/domain/errors/establishment.error';
@@ -23,7 +24,7 @@ const address = {
   zipCode: '01000-000',
 };
 
-describe('DesactivateProductUseCase', () => {
+describe('ActivateProductUseCase', () => {
   let products: InMemoryProductRepository;
   let productCategories: InMemoryProductCategoryRepository;
   let establishments: InMemoryEstablishmentRepository;
@@ -31,6 +32,7 @@ describe('DesactivateProductUseCase', () => {
   let createProductCategoryUseCase: CreateProductCategoryUseCase;
   let createProductUseCase: CreateProductUseCase;
   let desactivateUseCase: DesactivateProductUseCase;
+  let activateUseCase: ActivateProductUseCase;
 
   beforeEach(() => {
     products = new InMemoryProductRepository();
@@ -43,6 +45,7 @@ describe('DesactivateProductUseCase', () => {
     );
     createProductUseCase = new CreateProductUseCase(products, productCategories, establishments);
     desactivateUseCase = new DesactivateProductUseCase(products, productCategories, establishments);
+    activateUseCase = new ActivateProductUseCase(products, productCategories, establishments);
   });
 
   async function createProduct(ownerId: string) {
@@ -66,38 +69,38 @@ describe('DesactivateProductUseCase', () => {
     });
   }
 
-  it('deactivates an existing product', async () => {
+  it('activates a deactivated product', async () => {
     const created = await createProduct('owner-1');
-
-    const result = await desactivateUseCase.execute({ id: created.id, requesterId: 'owner-1' });
-
-    expect(result.isAvailable).toBe(false);
-
-    const persisted = await products.findById(created.id);
-    expect(persisted?.isAvailable).toBe(false);
-  });
-
-  it('throws when the product is already deactivated', async () => {
-    const created = await createProduct('owner-1');
-
     await desactivateUseCase.execute({ id: created.id, requesterId: 'owner-1' });
 
+    const result = await activateUseCase.execute({ id: created.id, requesterId: 'owner-1' });
+
+    expect(result.isAvailable).toBe(true);
+
+    const persisted = await products.findById(created.id);
+    expect(persisted?.isAvailable).toBe(true);
+  });
+
+  it('throws when the product is already activated', async () => {
+    const created = await createProduct('owner-1');
+
     await expect(
-      desactivateUseCase.execute({ id: created.id, requesterId: 'owner-1' }),
-    ).rejects.toThrow(ProductAlreadyDeactivatedError);
+      activateUseCase.execute({ id: created.id, requesterId: 'owner-1' }),
+    ).rejects.toThrow(ProductAlreadyActivatedError);
   });
 
   it('throws when the product does not exist', async () => {
     await expect(
-      desactivateUseCase.execute({ id: 'missing-id', requesterId: 'owner-1' }),
+      activateUseCase.execute({ id: 'missing-id', requesterId: 'owner-1' }),
     ).rejects.toThrow(ProductNotFoundError);
   });
 
   it('throws when the requester is not the establishment owner', async () => {
     const created = await createProduct('owner-1');
+    await desactivateUseCase.execute({ id: created.id, requesterId: 'owner-1' });
 
     await expect(
-      desactivateUseCase.execute({ id: created.id, requesterId: 'someone-else' }),
+      activateUseCase.execute({ id: created.id, requesterId: 'someone-else' }),
     ).rejects.toThrow(EstablishmentNotOwnedError);
   });
 });

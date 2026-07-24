@@ -7,22 +7,18 @@ import { ESTABLISHMENT_REPOSITORY } from '@/application/ports/establishment-repo
 import { ProductCategoryNotFoundError } from '@/domain/errors/product-category.errors';
 import type { ProductRepository } from '../../ports/product-repository.port';
 import { PRODUCT_REPOSITORY } from '../../ports/product-repository.port';
-import { ProductEntity } from '@/domain/entities/product.entity';
-import { Money } from '@/domain/value-objects/money.vo';
+import { ProductNotFoundError } from '@/domain/errors/product.errors';
 import {
   EstablishmentNotFoundError,
   EstablishmentNotOwnedError,
 } from '@/domain/errors/establishment.error';
 
-type CreateProductInput = {
-  name: string;
-  description?: string;
-  priceCents: Money;
-  categoryId: string;
+type ActivateProductInput = {
+  id: string;
   requesterId: string;
 };
 
-type ProductsOutput = {
+type ActivateProductOutput = {
   id: string;
   name: string;
   description: string | undefined;
@@ -34,7 +30,7 @@ type ProductsOutput = {
 };
 
 @Injectable()
-export class CreateProductUseCase {
+export class ActivateProductUseCase {
   constructor(
     @Inject(PRODUCT_REPOSITORY)
     private readonly products: ProductRepository,
@@ -46,10 +42,14 @@ export class CreateProductUseCase {
     private readonly establishments: EstablishmentRepository,
   ) {}
 
-  async execute(input: CreateProductInput): Promise<ProductsOutput> {
-    const productCategory = await this.productCategories.findById(input.categoryId);
+  async execute(input: ActivateProductInput): Promise<ActivateProductOutput> {
+    const product = await this.products.findById(input.id);
 
-    if (!productCategory) throw new ProductCategoryNotFoundError(input.categoryId);
+    if (!product) throw new ProductNotFoundError(input.id);
+
+    const productCategory = await this.productCategories.findById(product.categoryId);
+
+    if (!productCategory) throw new ProductCategoryNotFoundError(product.categoryId);
 
     const establishment = await this.establishments.findById(productCategory.establishmentId);
 
@@ -58,25 +58,19 @@ export class CreateProductUseCase {
     if (establishment.ownerId !== input.requesterId)
       throw new EstablishmentNotOwnedError(productCategory.establishmentId);
 
-    const product = ProductEntity.create({
-      id: crypto.randomUUID(),
-      name: input.name,
-      description: input.description,
-      price: input.priceCents,
-      categoryId: input.categoryId,
-    });
+    const activatedProduct = product.activate();
 
-    await this.products.save(product);
+    await this.products.update(activatedProduct);
 
     return {
-      id: product.id,
-      name: product.name,
-      description: product.description,
-      priceCents: product.priceCents,
-      isAvailable: product.isAvailable,
-      categoryId: product.categoryId,
-      createdAt: product.createdAt,
-      updatedAt: product.updatedAt,
+      id: activatedProduct.id,
+      name: activatedProduct.name,
+      description: activatedProduct.description,
+      priceCents: activatedProduct.priceCents,
+      isAvailable: activatedProduct.isAvailable,
+      categoryId: activatedProduct.categoryId,
+      createdAt: activatedProduct.createdAt,
+      updatedAt: activatedProduct.updatedAt,
     };
   }
 }
