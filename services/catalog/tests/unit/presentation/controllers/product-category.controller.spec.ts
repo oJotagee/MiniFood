@@ -35,14 +35,23 @@ describe('ProductCategoryController', () => {
     );
   });
 
-  it('findAllProductCategories passes the query filter through', async () => {
-    const expected = { list: [categoryFixture], pagination: { page: 1, perPage: 10, total: 1, totalPages: 1 } };
+  it('findAllProductCategories passes the query filter and the requester id from the token', async () => {
+    const expected = {
+      list: [categoryFixture],
+      pagination: { page: 1, perPage: 10, total: 1, totalPages: 1 },
+    };
     findAllProductCategoriesUseCase.execute.mockResolvedValue(expected);
 
     const filter = { establishmentId: 'establishment-1', limit: 10, offset: 0 };
-    const result = await controller.findAllProductCategories(filter as never);
+    const result = await controller.findAllProductCategories(
+      filter as never,
+      requestFor('owner-1'),
+    );
 
-    expect(findAllProductCategoriesUseCase.execute).toHaveBeenCalledWith(filter);
+    expect(findAllProductCategoriesUseCase.execute).toHaveBeenCalledWith({
+      ...filter,
+      requesterId: 'owner-1',
+    });
     expect(result).toBe(expected);
   });
 

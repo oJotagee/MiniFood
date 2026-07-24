@@ -8,7 +8,7 @@ import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class ProductPrismaRepository implements ProductRepository {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(private readonly prismaService: PrismaService) { }
 
   async findById(id: string): Promise<ProductEntity | null> {
     const product = await this.prismaService.product.findUnique({
@@ -24,23 +24,29 @@ export class ProductPrismaRepository implements ProductRepository {
 
   async findAll(params: {
     name: string;
+    establishmentIds: string[];
     limit: number;
     offset: number;
   }): Promise<{ data: ProductEntity[]; total: number }> {
+    if (params.establishmentIds.length === 0) {
+      return { data: [], total: 0 };
+    }
+
+    const where = {
+      name: { contains: params.name },
+      category: {
+        establishmentId: { in: params.establishmentIds },
+      },
+    };
+
     const [products, total] = await Promise.all([
       this.prismaService.product.findMany({
-        where: {
-          name: { contains: params.name },
-        },
+        where,
         take: params.limit,
         skip: params.offset,
         orderBy: { createdAt: 'desc' },
       }),
-      this.prismaService.product.count({
-        where: {
-          name: { contains: params.name },
-        },
-      }),
+      this.prismaService.product.count({ where }),
     ]);
 
     return {

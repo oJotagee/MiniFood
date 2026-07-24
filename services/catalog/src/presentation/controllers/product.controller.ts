@@ -69,8 +69,14 @@ export class ProductController {
     description: 'Lista de produtos',
     type: PaginatedProductResponseDto,
   })
-  async findAllProducts(@Query() filter: FilterProductDto): Promise<PaginatedProductResponseDto> {
-    const result = await this.findAllProductsUseCase.execute(filter);
+  async findAllProducts(
+    @Query() filter: FilterProductDto,
+    @Req() req: AuthenticatedRequest,
+  ): Promise<PaginatedProductResponseDto> {
+    const result = await this.findAllProductsUseCase.execute({
+      ...filter,
+      requesterId: req.user.userId,
+    });
 
     return {
       ...result,

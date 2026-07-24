@@ -61,8 +61,12 @@ export class ProductCategoryController {
   })
   findAllProductCategories(
     @Query() filter: FilterProductCategoriesDto,
+    @Req() req: AuthenticatedRequest,
   ): Promise<PaginatedProductCategoryResponseDto> {
-    return this.findAllProductCategoriesUseCase.execute(filter);
+    return this.findAllProductCategoriesUseCase.execute({
+      ...filter,
+      requesterId: req.user.userId,
+    });
   }
 
   @Get(':id')

@@ -25,12 +25,15 @@ describe('ProductPrismaRepository (integration)', () => {
   const createdCategoryIds: string[] = [];
   const createdEstablishmentIds: string[] = [];
 
-  async function createCategory(): Promise<string> {
+  async function createCategory(ownerId: string): Promise<{
+    categoryId: string;
+    establishmentId: string;
+  }> {
     const establishment = await prismaService.establishment.create({
       data: {
         id: crypto.randomUUID(),
         name: 'Mini Food',
-        ownerId: crypto.randomUUID(),
+        ownerId,
       },
     });
     createdEstablishmentIds.push(establishment.id);
@@ -44,7 +47,7 @@ describe('ProductPrismaRepository (integration)', () => {
     });
     createdCategoryIds.push(category.id);
 
-    return category.id;
+    return { categoryId: category.id, establishmentId: establishment.id };
   }
 
   beforeAll(async () => {
@@ -78,7 +81,7 @@ describe('ProductPrismaRepository (integration)', () => {
 
   describe('save + findById', () => {
     it('persists a product and rehydrates it from the database', async () => {
-      const categoryId = await createCategory();
+      const { categoryId } = await createCategory(crypto.randomUUID());
       const product = buildProduct({ categoryId });
       createdIds.push(product.id);
 
@@ -105,7 +108,8 @@ describe('ProductPrismaRepository (integration)', () => {
 
   describe('findAll', () => {
     it('paginates products filtered by name', async () => {
-      const categoryId = await createCategory();
+      const ownerId = crypto.randomUUID();
+      const { categoryId, establishmentId } = await createCategory(ownerId);
       const products = [
         ProductEntity.create({
           id: crypto.randomUUID(),
@@ -132,16 +136,56 @@ describe('ProductPrismaRepository (integration)', () => {
         await repository.save(product);
       }
 
-      const result = await repository.findAll({ name: 'Burger', limit: 10, offset: 0 });
+      const result = await repository.findAll({
+        name: 'Burger',
+        establishmentIds: [establishmentId],
+        limit: 10,
+        offset: 0,
+      });
 
       expect(result.total).toBe(2);
       expect(result.data.map((p) => p.name).sort()).toEqual(['Beef Burger', 'Chicken Burger']);
+    });
+
+    it('does not return products from another owner', async () => {
+      const ownerOne = crypto.randomUUID();
+      const ownerTwo = crypto.randomUUID();
+
+      const ownerOneCategory = await createCategory(ownerOne);
+      const ownerTwoCategory = await createCategory(ownerTwo);
+
+      const ownerOneProduct = ProductEntity.create({
+        id: crypto.randomUUID(),
+        name: 'Shared Burger',
+        price: Money.fromCents('2590'),
+        categoryId: ownerOneCategory.categoryId,
+      });
+      const ownerTwoProduct = ProductEntity.create({
+        id: crypto.randomUUID(),
+        name: 'Shared Burger',
+        price: Money.fromCents('2590'),
+        categoryId: ownerTwoCategory.categoryId,
+      });
+
+      createdIds.push(ownerOneProduct.id, ownerTwoProduct.id);
+      await repository.save(ownerOneProduct);
+      await repository.save(ownerTwoProduct);
+
+      const result = await repository.findAll({
+        name: 'Shared Burger',
+        establishmentIds: [ownerOneCategory.establishmentId],
+        limit: 10,
+        offset: 0,
+      });
+
+      expect(result.total).toBe(1);
+      expect(result.data[0]?.categoryId).toBe(ownerOneCategory.categoryId);
     });
   });
 
   describe('update', () => {
     it('updates product fields', async () => {
-      const categoryId = await createCategory();
+      const { categoryId } = await createCategory(crypto.randomUUID());
       const product = buildProduct({ categoryId });
       createdIds.push(product.id);
       await repository.save(product);
@@ -165,7 +209,7 @@ describe('ProductPrismaRepository (integration)', () => {
 
   describe('desactivate', () => {
     it('marks the product as unavailable', async () => {
-      const categoryId = await createCategory();
+      const { categoryId } = await createCategory(crypto.randomUUID());
       const product = buildProduct({ categoryId });
       createdIds.push(product.id);
       await repository.save(product);

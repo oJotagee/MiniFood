@@ -51,9 +51,16 @@ describe('ProductController', () => {
       pagination: { page: 1, perPage: 10, total: 1, totalPages: 1 },
     });
 
-    const result = await controller.findAllProducts({ limit: 10, offset: 0 } as never);
+    const result = await controller.findAllProducts(
+      { limit: 10, offset: 0 } as never,
+      requestFor('owner-1'),
+    );
 
-    expect(findAllProductsUseCase.execute).toHaveBeenCalledWith({ limit: 10, offset: 0 });
+    expect(findAllProductsUseCase.execute).toHaveBeenCalledWith({
+      limit: 10,
+      offset: 0,
+      requesterId: 'owner-1',
+    });
     expect(result.list[0].priceCents).toBe('2590');
   });
 

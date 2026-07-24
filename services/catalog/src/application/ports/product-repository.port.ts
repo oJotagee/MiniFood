@@ -7,6 +7,7 @@ export interface ProductRepository {
     name: string;
     limit: number;
     offset: number;
+    establishmentIds: string[];
   }): Promise<{ data: ProductEntity[]; total: number }>;
   findById(id: string): Promise<ProductEntity | null>;
   save(product: ProductEntity): Promise<void>;

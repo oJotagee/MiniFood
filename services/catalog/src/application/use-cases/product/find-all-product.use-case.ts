@@ -1,10 +1,13 @@
 import { Inject, Injectable } from '@nestjs/common';
 
+import type { EstablishmentRepository } from '@/application/ports/establishment-repository.port';
+import { ESTABLISHMENT_REPOSITORY } from '@/application/ports/establishment-repository.port';
 import type { ProductRepository } from '@/application/ports/product-repository.port';
 import { PRODUCT_REPOSITORY } from '../../ports/product-repository.port';
 
 type FindAllProductInput = {
   name?: string;
+  requesterId: string;
   limit?: number;
   offset?: number;
 };
@@ -35,6 +38,9 @@ export class FindAllProductsUseCase {
   constructor(
     @Inject(PRODUCT_REPOSITORY)
     private readonly productRepository: ProductRepository,
+
+    @Inject(ESTABLISHMENT_REPOSITORY)
+    private readonly establishmentRepository: EstablishmentRepository,
   ) {}
 
   async execute(input: FindAllProductInput): Promise<FindAllProductsOutput> {
@@ -42,10 +48,15 @@ export class FindAllProductsUseCase {
       Number.isInteger(input.limit) && input.limit! > 0 ? Math.min(input.limit!, 100) : 10;
     const offset = Number.isInteger(input.offset) && input.offset! > 0 ? input.offset! : 0;
 
+    const establishmentIds = await this.establishmentRepository.findIdsByOwnerId(
+      input.requesterId,
+    );
+
     const { data, total } = await this.productRepository.findAll({
       name: input.name ?? '',
       limit,
       offset,
+      establishmentIds,
     });
 
     return {

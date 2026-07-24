@@ -1,11 +1,18 @@
 import { Inject, Injectable } from '@nestjs/common';
 
+import type { EstablishmentRepository } from '@/application/ports/establishment-repository.port';
 import type { ProductCategoryRepository } from '../../ports/product-category-repository.port';
+import { ESTABLISHMENT_REPOSITORY } from '@/application/ports/establishment-repository.port';
 import { PRODUCT_CATEGORY_REPOSITORY } from '../../ports/product-category-repository.port';
+import {
+  EstablishmentNotFoundError,
+  EstablishmentNotOwnedError,
+} from '@/domain/errors/establishment.error';
 
 type FindAllProductCategoriesInput = {
   name?: string;
   establishmentId: string;
+  requesterId: string;
   limit?: number;
   offset?: number;
 };
@@ -32,9 +39,19 @@ export class FindAllProductCategoriesUseCase {
   constructor(
     @Inject(PRODUCT_CATEGORY_REPOSITORY)
     private readonly productCategories: ProductCategoryRepository,
-  ) {}
+
+    @Inject(ESTABLISHMENT_REPOSITORY)
+    private readonly establishments: EstablishmentRepository,
+  ) { }
 
   async execute(input: FindAllProductCategoriesInput): Promise<FindAllProductCategoriesOutput> {
+    const establishment = await this.establishments.findById(input.establishmentId);
+
+    if (!establishment) throw new EstablishmentNotFoundError(input.establishmentId);
+
+    if (establishment.ownerId !== input.requesterId)
+      throw new EstablishmentNotOwnedError(input.establishmentId);
+
     const limit =
       Number.isInteger(input.limit) && input.limit! > 0 ? Math.min(input.limit!, 100) : 10;
     const offset = Number.isInteger(input.offset) && input.offset! > 0 ? input.offset! : 0;

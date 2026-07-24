@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it } from 'bun:test';
 import { FindAllProductCategoriesUseCase } from '@/application/use-cases/product-category/find-all-product-categories.use-case';
 import { CreateProductCategoryUseCase } from '@/application/use-cases/product-category/create-product-category.use-case';
 import { CreateEstablishmentUseCase } from '@/application/use-cases/establishment/create-establishment.use-case';
+import { EstablishmentNotOwnedError } from '@/domain/errors/establishment.error';
 import { InMemoryProductCategoryRepository } from '@tests/unit/support/in-memory-product-category.repository';
 import { InMemoryEstablishmentRepository } from '@tests/unit/support/in-memory-establishment.repository';
 
@@ -31,7 +32,7 @@ describe('FindAllProductCategoriesUseCase', () => {
       productCategories,
       establishments,
     );
-    findAllUseCase = new FindAllProductCategoriesUseCase(productCategories);
+    findAllUseCase = new FindAllProductCategoriesUseCase(productCategories, establishments);
 
     const establishment = await createEstablishmentUseCase.execute({
       name: 'Mini Food',
@@ -50,7 +51,7 @@ describe('FindAllProductCategoriesUseCase', () => {
   });
 
   it('applies default pagination when none is provided', async () => {
-    const result = await findAllUseCase.execute({ establishmentId });
+    const result = await findAllUseCase.execute({ establishmentId, requesterId: 'owner-1' });
 
     expect(result.list).toHaveLength(10);
     expect(result.pagination).toEqual({
@@ -68,29 +69,49 @@ describe('FindAllProductCategoriesUseCase', () => {
       requesterId: 'owner-1',
     });
 
-    const result = await findAllUseCase.execute({ establishmentId, name: 'Burgers' });
+    const result = await findAllUseCase.execute({
+      establishmentId,
+      requesterId: 'owner-1',
+      name: 'Burgers',
+    });
 
     expect(result.list).toHaveLength(1);
     expect(result.list[0]?.name).toBe('Burgers');
   });
 
   it('falls back to the default limit when limit is zero or negative', async () => {
-    const zero = await findAllUseCase.execute({ establishmentId, limit: 0 });
-    const negative = await findAllUseCase.execute({ establishmentId, limit: -5 });
+    const zero = await findAllUseCase.execute({
+      establishmentId,
+      requesterId: 'owner-1',
+      limit: 0,
+    });
+    const negative = await findAllUseCase.execute({
+      establishmentId,
+      requesterId: 'owner-1',
+      limit: -5,
+    });
 
     expect(zero.pagination.perPage).toBe(10);
     expect(negative.pagination.perPage).toBe(10);
   });
 
   it('falls back to offset zero when offset is negative', async () => {
-    const result = await findAllUseCase.execute({ establishmentId, offset: -20 });
+    const result = await findAllUseCase.execute({
+      establishmentId,
+      requesterId: 'owner-1',
+      offset: -20,
+    });
 
     expect(result.list).toHaveLength(10);
     expect(result.pagination.page).toBe(1);
   });
 
   it('caps the limit to avoid unbounded page sizes', async () => {
-    const result = await findAllUseCase.execute({ establishmentId, limit: 10000 });
+    const result = await findAllUseCase.execute({
+      establishmentId,
+      requesterId: 'owner-1',
+      limit: 10000,
+    });
 
     expect(result.pagination.perPage).toBe(100);
   });
@@ -98,11 +119,18 @@ describe('FindAllProductCategoriesUseCase', () => {
   it('ignores non-integer limit and offset values', async () => {
     const result = await findAllUseCase.execute({
       establishmentId,
+      requesterId: 'owner-1',
       limit: 2.5,
       offset: 1.5,
     });
 
     expect(result.pagination.perPage).toBe(10);
     expect(result.pagination.page).toBe(1);
+  });
+
+  it('throws EstablishmentNotOwnedError when the requester does not own the establishment', async () => {
+    await expect(
+      findAllUseCase.execute({ establishmentId, requesterId: 'owner-2' }),
+    ).rejects.toThrow(EstablishmentNotOwnedError);
   });
 });

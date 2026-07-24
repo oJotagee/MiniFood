@@ -47,6 +47,15 @@ export class EstablishmentPrismaRepository implements EstablishmentRepository {
     };
   }
 
+  async findIdsByOwnerId(ownerId: string): Promise<string[]> {
+    const establishments = await this.prismaService.establishment.findMany({
+      where: { ownerId },
+      select: { id: true },
+    });
+
+    return establishments.map((establishment) => establishment.id);
+  }
+
   async save(establishment: EstablishmentEntity): Promise<void> {
     const persistence = EstablishmentMapper.toPersistence(establishment);
 

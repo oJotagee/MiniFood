@@ -23,6 +23,12 @@ export class InMemoryEstablishmentRepository implements EstablishmentRepository 
     };
   }
 
+  async findIdsByOwnerId(ownerId: string): Promise<string[]> {
+    return [...this.establishments.values()]
+      .filter((establishment) => establishment.ownerId === ownerId)
+      .map((establishment) => establishment.id);
+  }
+
   async save(establishment: EstablishmentEntity): Promise<void> {
     this.establishments.set(establishment.id, establishment);
   }

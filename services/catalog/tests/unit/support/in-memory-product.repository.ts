@@ -10,6 +10,7 @@ export class InMemoryProductRepository implements ProductRepository {
 
   async findAll(params: {
     name: string;
+    establishmentIds: string[];
     limit: number;
     offset: number;
   }): Promise<{ data: ProductEntity[]; total: number }> {

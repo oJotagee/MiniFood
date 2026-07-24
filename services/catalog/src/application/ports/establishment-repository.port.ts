@@ -8,6 +8,7 @@ export interface EstablishmentRepository {
     data: EstablishmentEntity[];
     total: number;
   }>;
+  findIdsByOwnerId(ownerId: string): Promise<string[]>;
   save(establishment: EstablishmentEntity): Promise<void>;
   update(establishment: EstablishmentEntity): Promise<void>;
 }
