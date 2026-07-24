@@ -16,6 +16,7 @@ import { FindProductByIdUseCase } from './application/use-cases/product/find-pro
 import { FindAllProductsUseCase } from './application/use-cases/product/find-all-product.use-case';
 import { ProductCategoryController } from './presentation/controllers/product-category.controller';
 import { PRODUCT_CATEGORY_REPOSITORY } from './application/ports/product-category-repository.port';
+import { ActivateProductUseCase } from './application/use-cases/product/activate-product.use-case';
 import { ProductPrismaRepository } from './infrastructure/repositories/product-prisma.repository';
 import { CreateProductUseCase } from './application/use-cases/product/create-product.use-case';
 import { UpdateProductUseCase } from './application/use-cases/product/update-product.use-case';
@@ -65,6 +66,7 @@ import { PrismaService } from './infrastructure/prisma/prisma.service';
     CreateProductUseCase,
     UpdateProductUseCase,
     DesactivateProductUseCase,
+    ActivateProductUseCase,
     {
       provide: PRODUCT_REPOSITORY,
       useClass: ProductPrismaRepository,

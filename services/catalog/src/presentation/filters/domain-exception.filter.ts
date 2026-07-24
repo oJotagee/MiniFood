@@ -13,6 +13,7 @@ import {
 } from '@/domain/errors/product-category.errors';
 import {
   InvalidProductError,
+  ProductAlreadyActivatedError,
   ProductAlreadyDeactivatedError,
   ProductNotFoundError,
 } from '@/domain/errors/product.errors';
@@ -35,6 +36,7 @@ type DomainError =
   | InvalidProductError
   | ProductNotFoundError
   | ProductAlreadyDeactivatedError
+  | ProductAlreadyActivatedError
   | InvalidProductCategoryError
   | ProductCategoryNotFoundError;
 
@@ -48,6 +50,7 @@ const STATUS_BY_ERROR = new Map<Function, { statusCode: number; error: string }>
   [InvalidProductError, { statusCode: HttpStatus.BAD_REQUEST, error: 'BadRequest' }],
   [ProductNotFoundError, { statusCode: HttpStatus.NOT_FOUND, error: 'NotFound' }],
   [ProductAlreadyDeactivatedError, { statusCode: HttpStatus.CONFLICT, error: 'Conflict' }],
+  [ProductAlreadyActivatedError, { statusCode: HttpStatus.CONFLICT, error: 'Conflict' }],
   [InvalidProductCategoryError, { statusCode: HttpStatus.BAD_REQUEST, error: 'BadRequest' }],
   [ProductCategoryNotFoundError, { statusCode: HttpStatus.NOT_FOUND, error: 'NotFound' }],
 ]);
@@ -61,6 +64,7 @@ const STATUS_BY_ERROR = new Map<Function, { statusCode: number; error: string }>
   InvalidProductError,
   ProductNotFoundError,
   ProductAlreadyDeactivatedError,
+  ProductAlreadyActivatedError,
   InvalidProductCategoryError,
   ProductCategoryNotFoundError,
 )

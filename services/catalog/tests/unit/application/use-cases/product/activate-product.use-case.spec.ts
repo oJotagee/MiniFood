@@ -8,10 +8,7 @@ import { CreateEstablishmentUseCase } from '@/application/use-cases/establishmen
 import { InMemoryProductRepository } from '@tests/unit/support/in-memory-product.repository';
 import { InMemoryProductCategoryRepository } from '@tests/unit/support/in-memory-product-category.repository';
 import { InMemoryEstablishmentRepository } from '@tests/unit/support/in-memory-establishment.repository';
-import {
-  ProductAlreadyActivatedError,
-  ProductNotFoundError,
-} from '@/domain/errors/product.errors';
+import { ProductAlreadyActivatedError, ProductNotFoundError } from '@/domain/errors/product.errors';
 import { EstablishmentNotOwnedError } from '@/domain/errors/establishment.error';
 import { Money } from '@/domain/value-objects/money.vo';
 

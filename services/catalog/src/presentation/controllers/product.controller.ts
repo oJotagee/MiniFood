@@ -41,7 +41,7 @@ export class ProductController {
     private readonly updateProductUseCase: UpdateProductUseCase,
     private readonly deactivateProductUseCase: DesactivateProductUseCase,
     private readonly activateProductUseCase: ActivateProductUseCase,
-  ) { }
+  ) {}
 
   @Get()
   @ApiQuery({
@@ -143,7 +143,7 @@ export class ProductController {
     await this.deactivateProductUseCase.execute({ id, requesterId: req.user.userId });
   }
 
-  @Patch(':id')
+  @Patch(':id/activate')
   @ApiOkResponse({
     description: 'Produto ativado',
   })
