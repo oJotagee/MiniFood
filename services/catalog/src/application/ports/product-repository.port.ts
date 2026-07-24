@@ -12,4 +12,5 @@ export interface ProductRepository {
   save(product: ProductEntity): Promise<void>;
   update(product: ProductEntity): Promise<void>;
   desactivate(id: string): Promise<void>;
+  activate(id: string): Promise<void>;
 }

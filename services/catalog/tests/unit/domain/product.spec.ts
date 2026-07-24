@@ -4,6 +4,7 @@ import { ProductEntity } from '@/domain/entities/product.entity';
 import { Money } from '@/domain/value-objects/money.vo';
 import {
   InvalidProductError,
+  ProductAlreadyActivatedError,
   ProductAlreadyDeactivatedError,
 } from '@/domain/errors/product.errors';
 
@@ -46,6 +47,21 @@ describe('ProductEntity', () => {
 
     expect(deactivated.isAvailable).toBe(false);
     expect(() => deactivated.deactivate()).toThrow(ProductAlreadyDeactivatedError);
+  });
+
+  it('activates a deactivated product', () => {
+    const product = ProductEntity.create({
+      id: 'product-1',
+      name: 'Cheeseburger',
+      price: Money.fromCents('2590'),
+      categoryId: 'category-1',
+    });
+
+    const deactivated = product.deactivate();
+    const activated = deactivated.activate();
+
+    expect(activated.isAvailable).toBe(true);
+    expect(() => activated.activate()).toThrow(ProductAlreadyActivatedError);
   });
 
   it('rejects product without category', () => {
@@ -117,5 +133,22 @@ describe('ProductEntity', () => {
 
     expect(events).toHaveLength(1);
     expect(events[0].type).toBe('product.deactivated');
+  });
+
+  it('records only product activation event when activating', () => {
+    const product = ProductEntity.create({
+      id: 'product-1',
+      name: 'Cheeseburger',
+      price: Money.fromCents('2590'),
+      categoryId: 'category-1',
+    });
+    const deactivated = product.deactivate();
+    deactivated.pullDomainEvents();
+
+    const activated = deactivated.activate();
+    const events = activated.pullDomainEvents();
+
+    expect(events).toHaveLength(1);
+    expect(events[0].type).toBe('product.activated');
   });
 });

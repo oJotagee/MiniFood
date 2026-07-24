@@ -84,4 +84,17 @@ export class ProductPrismaRepository implements ProductRepository {
       data: { isAvailable: false },
     });
   }
+
+  async activate(id: string): Promise<void> {
+    const existing = await this.prismaService.product.findUnique({
+      where: { id },
+    });
+
+    if (!existing) throw new ProductNotFoundError(id);
+
+    await this.prismaService.product.update({
+      where: { id },
+      data: { isAvailable: true },
+    });
+  }
 }

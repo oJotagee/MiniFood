@@ -34,4 +34,10 @@ export class InMemoryProductRepository implements ProductRepository {
     if (!product) return;
     this.products.set(id, product.deactivate());
   }
+
+  async activate(id: string): Promise<void> {
+    const product = this.products.get(id);
+    if (!product) return;
+    this.products.set(id, product.activate());
+  }
 }

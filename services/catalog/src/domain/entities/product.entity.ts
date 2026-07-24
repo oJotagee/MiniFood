@@ -1,5 +1,10 @@
-import { InvalidProductError, ProductAlreadyDeactivatedError } from '../errors/product.errors';
+import {
+  InvalidProductError,
+  ProductAlreadyActivatedError,
+  ProductAlreadyDeactivatedError,
+} from '../errors/product.errors';
 import { ProductDeactivatedEvent } from '../events/product-deactivated.event';
+import { ProductActivatedEvent } from '../events/product-activate.events';
 import { ProductCreatedEvent } from '../events/product-created.event';
 import { ProductUpdatedEvent } from '../events/product-updated.event';
 import { Money } from '../value-objects/money.vo';
@@ -7,6 +12,7 @@ import { Money } from '../value-objects/money.vo';
 export type ProductDomainEvent =
   | ProductCreatedEvent
   | ProductDeactivatedEvent
+  | ProductActivatedEvent
   | ProductUpdatedEvent;
 
 type ProductProps = {
@@ -181,6 +187,33 @@ export class ProductEntity {
 
     product.recordDomainEvent({
       type: 'product.deactivated',
+      occurredAt: now,
+      payload: {
+        productId: this.id,
+      },
+    });
+
+    return product;
+  }
+
+  activate(): ProductEntity {
+    if (this.isAvailable) throw new ProductAlreadyActivatedError(this.id);
+
+    const now = new Date();
+
+    const product = new ProductEntity({
+      id: this.id,
+      name: this.name,
+      description: this.description,
+      price: this.price,
+      isAvailable: true,
+      categoryId: this.categoryId,
+      createdAt: this.createdAt,
+      updatedAt: now,
+    });
+
+    product.recordDomainEvent({
+      type: 'product.activated',
       occurredAt: now,
       payload: {
         productId: this.id,

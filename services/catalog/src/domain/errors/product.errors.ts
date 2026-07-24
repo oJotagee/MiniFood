@@ -12,6 +12,13 @@ export class ProductAlreadyDeactivatedError extends Error {
   }
 }
 
+export class ProductAlreadyActivatedError extends Error {
+  constructor(productId: string) {
+    super(`Product with id ${productId} is already activated.`);
+    this.name = 'ProductAlreadyActivatedError';
+  }
+}
+
 export class ProductNotFoundError extends Error {
   constructor(productId: string) {
     super(`Product with id ${productId} not found.`);
