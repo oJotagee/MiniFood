@@ -5,24 +5,29 @@ Plataforma de delivery construída como um monorepo de microsserviços, no estil
 ## Arquitetura
 
 ```
-Frontend → Kong (API Gateway) → catalog / order / delivery
+Frontend → Kong (API Gateway) → auth / catalog / order / delivery
                                        ↓
                                   PostgreSQL (1 database por serviço)
                                        ↓
                                    RabbitMQ (eventos entre serviços)
 
-Keycloak emite os tokens JWT usados por todos os serviços.
+Keycloak é o Identity Provider: emite os tokens JWT usados por todos os
+serviços. O auth-service não o substitui — ele é uma fachada por cima do
+Keycloak (Admin API + token endpoint), dona do perfil local do usuário
+(nome, e-mail, papel, preferência de 2FA) e dos fluxos de reset de senha
+e 2FA por e-mail que o Keycloak não expõe prontos.
 ```
 
-- **Kong**: gateway único de entrada (porta `8000`). Roteia `/catalog`, `/orders` e `/delivery` para os serviços correspondentes, removendo o prefixo (`strip_path`).
-- **Keycloak**: Identity Provider. Realm `mini-food` importado automaticamente a partir de `docker/keycloak`.
-- **PostgreSQL**: uma instância compartilhada, com um database por serviço (`catalog`, `order`, `delivery`), criados via `docker/postgres/init-databases.sh`.
+- **Kong**: gateway único de entrada (porta `8000`). Roteia `/auth`, `/catalog`, `/orders` e `/delivery` para os serviços correspondentes, removendo o prefixo (`strip_path`).
+- **Keycloak**: Identity Provider. Realm `mini-food` importado automaticamente a partir de `docker/keycloak`. Guarda credenciais e emite os JWTs; cada serviço valida a assinatura sozinho via JWKS.
+- **PostgreSQL**: uma instância compartilhada, com um database por serviço (`auth`, `catalog`, `order`, `delivery`), criados via `docker/postgres/init-databases.sh`.
 - **RabbitMQ**: barramento de eventos entre os serviços (padrão outbox/inbox nos serviços que já implementam persistência).
 
 ## Serviços
 
 | Serviço | Status | Porta | Descrição |
 |---|---|---|---|
+| [auth](services/auth) | Implementado | 4004 | Registro, login, perfil, reset de senha e 2FA por e-mail |
 | [catalog](services/catalog) | Implementado | 4001 | Estabelecimentos, categorias e produtos |
 | order | Esqueleto | 4002 | Pedidos (ainda não implementado) |
 | delivery | Esqueleto | 4003 | Entregas (ainda não implementado) |
@@ -75,22 +80,33 @@ bun run docker:dev:up        # sobe só a infra (postgres, rabbitmq, keycloak, k
 - Gateway (Kong): `http://localhost:8000`
 - Keycloak: `http://localhost:8080` (admin/admin)
 - RabbitMQ Management: `http://localhost:15672` (admin/admin)
+- Auth (direto, sem gateway): `http://localhost:4004`
 - Catalog (direto, sem gateway): `http://localhost:4001`
 
 ## Testes
 
 ```bash
-bun test               # todos os testes
-bun run test:unit      # unitários do catalog
-bun run test:coverage  # com cobertura
+bun run test                       # unitários do auth e do catalog (sem banco)
+bun run test:unit                  # idem
+bun run test:coverage              # com cobertura
+
+# integração (banco real — rodar por serviço, cada um isolado num processo próprio)
+bun run test:integration:catalog
+bun run test:integration:auth
 ```
 
-## Prisma (catalog)
+> Não use `bun test` direto na raiz: ele varre todo o monorepo no mesmo processo, incluindo os testes de integração de `catalog` e `auth`, que usam bancos diferentes — o primeiro `.env` carregado "gruda" e os testes do outro serviço conectam no banco errado.
+
+## Prisma
 
 ```bash
-bun run prisma:generate:catalog       # gera o client
-bun run prisma:migrate:dev:catalog    # roda migrations em dev
-bun run prisma:studio:catalog         # abre o Prisma Studio
+bun run prisma:generate:catalog       # gera o client (catalog)
+bun run prisma:migrate:dev:catalog    # roda migrations em dev (catalog)
+bun run prisma:studio:catalog         # abre o Prisma Studio (catalog)
+
+bun run prisma:generate:auth          # gera o client (auth)
+bun run prisma:migrate:dev:auth       # roda migrations em dev (auth)
+bun run prisma:studio:auth            # abre o Prisma Studio (auth)
 ```
 
 ## Formatação e lint
