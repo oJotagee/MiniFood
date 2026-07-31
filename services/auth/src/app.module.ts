@@ -16,7 +16,7 @@ import { UpdateProfileUseCase } from './application/use-cases/update-profile.use
 import { DomainExceptionFilter } from './presentation/filters/domain-exception.filter';
 import { KeycloakAdminClient } from './infrastructure/keycloak/keycloak-admin.client';
 import { KeycloakTokenClient } from './infrastructure/keycloak/keycloak-token.client';
-import { ConsoleEmailSender } from './infrastructure/email/console-email-sender';
+import { SmtpEmailSender } from './infrastructure/email/smtp-email-sender';
 import { RefreshTokenUseCase } from './application/use-cases/refresh-token.use-case';
 import { RegisterUserUseCase } from './application/use-cases/register-user.use-case';
 import { HealthController } from './presentation/controllers/health.controller';
@@ -62,7 +62,7 @@ import { LoginUseCase } from './application/use-cases/login.use-case';
     },
     {
       provide: EMAIL_SENDER,
-      useClass: ConsoleEmailSender,
+      useClass: SmtpEmailSender,
     },
     // KEYCLOAK
     KeycloakAdminClient,
