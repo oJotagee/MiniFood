@@ -24,6 +24,8 @@ import { FilterProductDto } from '../dtos/product/filter-product.dto';
 import { UpdateProductDto } from '../dtos/product/update-product.dto';
 import { CreateProductDto } from '../dtos/product/create-product.dto';
 import { JwtAuthGuard } from '@/infrastructure/auth/jwt-auth.guard';
+import { RolesGuard } from '@/infrastructure/auth/roles.guard';
+import { Roles } from '@/infrastructure/auth/roles.decorator';
 import { Money } from '@/domain/value-objects/money.vo';
 import {
   PaginatedProductResponseDto,
@@ -31,7 +33,8 @@ import {
 } from '../dtos/product/response-product-categories.dto';
 
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('company')
 @Controller('products')
 export class ProductController {
   constructor(

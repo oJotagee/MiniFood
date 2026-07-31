@@ -10,13 +10,16 @@ import { FilterEstablishmentDto } from '../dtos/establishment/filter-establishme
 import { CreateEstablishmentDto } from '../dtos/establishment/create-establishment.dto';
 import { UpdateEstablishmentDto } from '../dtos/establishment/update-establishment.dto';
 import { JwtAuthGuard } from '@/infrastructure/auth/jwt-auth.guard';
+import { RolesGuard } from '@/infrastructure/auth/roles.guard';
+import { Roles } from '@/infrastructure/auth/roles.decorator';
 import {
   EstablishmentDto,
   PaginatedEstablishmentResponseDto,
 } from '../dtos/establishment/response-establishment.dto';
 
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('company')
 @Controller('establishments')
 export class EstablishmentController {
   constructor(

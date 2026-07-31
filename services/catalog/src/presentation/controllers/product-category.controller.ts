@@ -10,13 +10,16 @@ import { UpdateProductCategoryDto } from '../dtos/product-categories/update-prod
 import { CreateProductCategoryDto } from '../dtos/product-categories/create-product-category.dto';
 import type { AuthenticatedRequest } from '@/infrastructure/auth/authenticated-request';
 import { JwtAuthGuard } from '@/infrastructure/auth/jwt-auth.guard';
+import { RolesGuard } from '@/infrastructure/auth/roles.guard';
+import { Roles } from '@/infrastructure/auth/roles.decorator';
 import {
   PaginatedProductCategoryResponseDto,
   ProductCategoryDto,
 } from '../dtos/product-categories/response-product-categories.dto';
 
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('company')
 @Controller('product-categories')
 export class ProductCategoryController {
   constructor(
