@@ -89,6 +89,14 @@ export type CatalogProductDeactivated = EventEnvelope<
   }
 >;
 
+export type CatalogProductActivated = EventEnvelope<
+  'catalog.product.activated',
+  {
+    productId: string;
+    establishmentId: string;
+  }
+>;
+
 export type CatalogEvent =
   | CatalogEstablishmentCreated
   | CatalogEstablishmentUpdated
@@ -96,4 +104,5 @@ export type CatalogEvent =
   | CatalogProductCategoryUpdated
   | CatalogProductCreated
   | CatalogProductUpdated
-  | CatalogProductDeactivated;
+  | CatalogProductDeactivated
+  | CatalogProductActivated;
