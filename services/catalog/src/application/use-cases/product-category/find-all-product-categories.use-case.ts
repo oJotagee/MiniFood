@@ -42,7 +42,7 @@ export class FindAllProductCategoriesUseCase {
 
     @Inject(ESTABLISHMENT_REPOSITORY)
     private readonly establishments: EstablishmentRepository,
-  ) { }
+  ) {}
 
   async execute(input: FindAllProductCategoriesInput): Promise<FindAllProductCategoriesOutput> {
     const establishment = await this.establishments.findById(input.establishmentId);

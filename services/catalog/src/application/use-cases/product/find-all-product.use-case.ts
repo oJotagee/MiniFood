@@ -48,9 +48,7 @@ export class FindAllProductsUseCase {
       Number.isInteger(input.limit) && input.limit! > 0 ? Math.min(input.limit!, 100) : 10;
     const offset = Number.isInteger(input.offset) && input.offset! > 0 ? input.offset! : 0;
 
-    const establishmentIds = await this.establishmentRepository.findIdsByOwnerId(
-      input.requesterId,
-    );
+    const establishmentIds = await this.establishmentRepository.findIdsByOwnerId(input.requesterId);
 
     const { data, total } = await this.productRepository.findAll({
       name: input.name ?? '',

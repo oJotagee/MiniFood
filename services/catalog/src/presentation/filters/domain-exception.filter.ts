@@ -40,7 +40,6 @@ type DomainError =
   | InvalidProductCategoryError
   | ProductCategoryNotFoundError;
 
-// EstablishmentNotOwnedError vira 404 (nao 403): nao revela a terceiros que o recurso existe.
 const STATUS_BY_ERROR = new Map<Function, { statusCode: number; error: string }>([
   [AddressError, { statusCode: HttpStatus.BAD_REQUEST, error: 'BadRequest' }],
   [InvalidMoneyError, { statusCode: HttpStatus.BAD_REQUEST, error: 'BadRequest' }],
@@ -70,7 +69,6 @@ const STATUS_BY_ERROR = new Map<Function, { statusCode: number; error: string }>
 )
 export class DomainExceptionFilter implements ExceptionFilter<DomainError> {
   catch(exception: DomainError, host: ArgumentsHost): void {
-    // Traduz erro de dominio para HTTP sem acoplar use case ao NestJS.
     const mapping = STATUS_BY_ERROR.get(exception.constructor) ?? {
       statusCode: HttpStatus.BAD_REQUEST,
       error: 'BadRequest',
