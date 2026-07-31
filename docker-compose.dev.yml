@@ -46,6 +46,8 @@ services:
     image: quay.io/keycloak/keycloak:26.5.5
     # --import-realm lê todo JSON em /opt/keycloak/data/import
     # e cria o realm automaticamente → ZERO configuração manual
+    # SÓ importa se o realm ainda não existir no volume (keycloak_data);
+    # ajustes feitos no console (roles, novos usuários) sobrevivem a down/up.
     command: start-dev --import-realm
     ports:
       - "8080:8080"
@@ -55,6 +57,9 @@ services:
       KC_HEALTH_ENABLED: "true"
     volumes:
       - ./docker/keycloak:/opt/keycloak/data/import:ro
+      # H2 embutido do start-dev vive em /opt/keycloak/data — sem isso,
+      # todo `docker compose down` apaga usuários e configs do realm.
+      - keycloak_data:/opt/keycloak/data
 
   # ── Kong (API Gateway, modo DB-less) ───────────────────────
   kong:
@@ -76,3 +81,4 @@ services:
 volumes:
   postgres_data:
   rabbitmq_data:
+  keycloak_data:
