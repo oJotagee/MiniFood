@@ -23,7 +23,6 @@ export class VerifyTwoFactorUseCase {
 
     @Inject(IDENTITY_PROVIDER)
     private readonly identityProvider: IdentityProvider,
-
     private readonly tokenCipher: TokenCipher,
   ) { }
 

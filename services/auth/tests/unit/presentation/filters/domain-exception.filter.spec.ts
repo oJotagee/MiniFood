@@ -2,7 +2,11 @@ import { describe, expect, it } from 'bun:test';
 import type { ArgumentsHost } from '@nestjs/common';
 
 import { InvalidEmailError } from '@/domain/errors/email.error';
-import { InvalidUserError, UserAlreadyExistsError, UserNotFoundError } from '@/domain/errors/user.error';
+import {
+  InvalidUserError,
+  UserAlreadyExistsError,
+  UserNotFoundError,
+} from '@/domain/errors/user.error';
 import {
   InvalidPasswordResetTokenError,
   PasswordResetTokenAlreadyUsedError,

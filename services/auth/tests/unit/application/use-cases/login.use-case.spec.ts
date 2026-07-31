@@ -22,13 +22,7 @@ describe('LoginUseCase', () => {
     challenges = new InMemoryTwoFactorChallengeRepository();
     identityProvider = new FakeIdentityProvider();
     emailSender = new FakeEmailSender();
-    useCase = new LoginUseCase(
-      identityProvider,
-      users,
-      challenges,
-      emailSender,
-      new TokenCipher(),
-    );
+    useCase = new LoginUseCase(identityProvider, users, challenges, emailSender, new TokenCipher());
   });
 
   it('returns tokens directly when the user does not have two-factor enabled', async () => {

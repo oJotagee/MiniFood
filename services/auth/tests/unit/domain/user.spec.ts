@@ -97,8 +97,8 @@ describe('UserEntity', () => {
   });
 
   it('rejects blank name', () => {
-    expect(() =>
-      UserEntity.create({ id: 'user-1', name: '', email, role: 'customer' }),
-    ).toThrow(InvalidUserError);
+    expect(() => UserEntity.create({ id: 'user-1', name: '', email, role: 'customer' })).toThrow(
+      InvalidUserError,
+    );
   });
 });

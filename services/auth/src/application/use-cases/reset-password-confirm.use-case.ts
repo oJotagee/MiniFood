@@ -20,7 +20,7 @@ export class ResetPasswordConfirmUseCase {
 
     @Inject(IDENTITY_PROVIDER)
     private readonly identityProvider: IdentityProvider,
-  ) { }
+  ) {}
 
   async execute(input: ResetPasswordConfirmInput): Promise<void> {
     const tokenHash = PasswordResetTokenEntity.hash(input.token);

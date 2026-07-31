@@ -56,7 +56,12 @@ describe('UserController', () => {
   it('register delegates to the use case', async () => {
     registerUserUseCase.execute.mockResolvedValue(userFixture);
 
-    const body = { name: 'Joao', email: 'joao@example.com', password: 'senha-123', role: 'customer' };
+    const body = {
+      name: 'Joao',
+      email: 'joao@example.com',
+      password: 'senha-123',
+      role: 'customer',
+    };
     const result = await controller.register(body as never);
 
     expect(registerUserUseCase.execute).toHaveBeenCalledWith(body);
@@ -64,7 +69,12 @@ describe('UserController', () => {
   });
 
   it('login delegates to the use case', async () => {
-    const expected = { requiresTwoFactor: false, accessToken: 'a', refreshToken: 'r', expiresIn: 300 };
+    const expected = {
+      requiresTwoFactor: false,
+      accessToken: 'a',
+      refreshToken: 'r',
+      expiresIn: 300,
+    };
     loginUseCase.execute.mockResolvedValue(expected);
 
     const body = { email: 'joao@example.com', password: 'senha-123' };

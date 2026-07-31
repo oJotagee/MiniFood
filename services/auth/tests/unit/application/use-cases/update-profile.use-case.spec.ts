@@ -76,14 +76,12 @@ describe('UpdateProfileUseCase', () => {
       }),
     );
 
-    await expect(
-      useCase.execute({ id: 'user-2', email: 'joao@example.com' }),
-    ).rejects.toThrow(UserAlreadyExistsError);
+    await expect(useCase.execute({ id: 'user-2', email: 'joao@example.com' })).rejects.toThrow(
+      UserAlreadyExistsError,
+    );
   });
 
   it('rejects when the user does not exist', async () => {
-    await expect(useCase.execute({ id: 'missing', name: 'X' })).rejects.toThrow(
-      UserNotFoundError,
-    );
+    await expect(useCase.execute({ id: 'missing', name: 'X' })).rejects.toThrow(UserNotFoundError);
   });
 });

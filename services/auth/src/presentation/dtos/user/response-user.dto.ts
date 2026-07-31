@@ -36,7 +36,8 @@ export class TokensDto {
 
 export class LoginResponseDto {
   @ApiProperty({
-    description: 'Se true, o login exige confirmar o código de 2FA enviado por e-mail antes de liberar os tokens',
+    description:
+      'Se true, o login exige confirmar o código de 2FA enviado por e-mail antes de liberar os tokens',
   })
   requiresTwoFactor!: boolean;
 

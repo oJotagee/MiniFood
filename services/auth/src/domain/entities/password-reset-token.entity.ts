@@ -48,7 +48,10 @@ export class PasswordResetTokenEntity {
     return this.props.createdAt;
   }
 
-  static issue(input: { id: string; userId: string }): { entity: PasswordResetTokenEntity; rawToken: string } {
+  static issue(input: { id: string; userId: string }): {
+    entity: PasswordResetTokenEntity;
+    rawToken: string;
+  } {
     const rawToken = randomBytes(32).toString('hex');
     const now = new Date();
 

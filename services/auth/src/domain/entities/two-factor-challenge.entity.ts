@@ -62,11 +62,10 @@ export class TwoFactorChallengeEntity {
     return this.props.createdAt;
   }
 
-  static issue(input: {
-    id: string;
-    userId: string;
-    encryptedRefreshToken: string;
-  }): { entity: TwoFactorChallengeEntity; rawCode: string } {
+  static issue(input: { id: string; userId: string; encryptedRefreshToken: string }): {
+    entity: TwoFactorChallengeEntity;
+    rawCode: string;
+  } {
     const rawCode = randomInt(0, 1_000_000).toString().padStart(6, '0');
     const now = new Date();
 
@@ -115,10 +114,8 @@ export class TwoFactorChallengeEntity {
   }
 
   private static validate(props: TwoFactorChallengeProps): void {
-    if (!props.id.trim())
-      throw new InvalidTwoFactorChallengeError('Challenge id cannot be empty.');
-    if (!props.userId.trim())
-      throw new InvalidTwoFactorChallengeError('User id cannot be empty.');
+    if (!props.id.trim()) throw new InvalidTwoFactorChallengeError('Challenge id cannot be empty.');
+    if (!props.userId.trim()) throw new InvalidTwoFactorChallengeError('User id cannot be empty.');
     if (!props.codeHash.trim())
       throw new InvalidTwoFactorChallengeError('Code hash cannot be empty.');
     if (!props.encryptedRefreshToken.trim())

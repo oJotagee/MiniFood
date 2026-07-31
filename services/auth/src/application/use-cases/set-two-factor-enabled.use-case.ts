@@ -25,7 +25,7 @@ export class SetTwoFactorEnabledUseCase {
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly users: UserRepository,
-  ) { }
+  ) {}
 
   async execute(input: SetTwoFactorEnabledInput): Promise<SetTwoFactorEnabledOutput> {
     const user = await this.users.findById(input.id);

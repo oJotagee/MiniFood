@@ -20,7 +20,7 @@ export class ResetPasswordRequestUseCase {
 
     @Inject(EMAIL_SENDER)
     private readonly emailSender: EmailSender,
-  ) { }
+  ) {}
 
   async execute({ email }: { email: string }): Promise<void> {
     const validEmail = Email.create({ value: email });

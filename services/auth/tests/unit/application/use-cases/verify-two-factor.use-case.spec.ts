@@ -50,18 +50,18 @@ describe('VerifyTwoFactorUseCase', () => {
     });
     await challenges.create(entity);
 
-    await expect(
-      useCase.execute({ challengeId: 'challenge-1', code: '000000' }),
-    ).rejects.toThrow(InvalidTwoFactorCodeError);
+    await expect(useCase.execute({ challengeId: 'challenge-1', code: '000000' })).rejects.toThrow(
+      InvalidTwoFactorCodeError,
+    );
 
     const persisted = await challenges.findById('challenge-1');
     expect(persisted?.attempts).toBe(1);
   });
 
   it('rejects when the challenge does not exist', async () => {
-    await expect(
-      useCase.execute({ challengeId: 'missing', code: '123456' }),
-    ).rejects.toThrow(InvalidTwoFactorChallengeError);
+    await expect(useCase.execute({ challengeId: 'missing', code: '123456' })).rejects.toThrow(
+      InvalidTwoFactorChallengeError,
+    );
   });
 
   it('rejects a code for an already-consumed challenge', async () => {
@@ -73,8 +73,8 @@ describe('VerifyTwoFactorUseCase', () => {
     await challenges.create(entity);
     await useCase.execute({ challengeId: 'challenge-1', code: rawCode });
 
-    await expect(
-      useCase.execute({ challengeId: 'challenge-1', code: rawCode }),
-    ).rejects.toThrow(TwoFactorChallengeAlreadyUsedError);
+    await expect(useCase.execute({ challengeId: 'challenge-1', code: rawCode })).rejects.toThrow(
+      TwoFactorChallengeAlreadyUsedError,
+    );
   });
 });

@@ -1,8 +1,5 @@
 import type { UserRole } from '@/domain/entities/user.entity';
-import type {
-  IdentityProvider,
-  IdentityTokens,
-} from '@/application/port/identity-provider.port';
+import type { IdentityProvider, IdentityTokens } from '@/application/port/identity-provider.port';
 
 export class FakeIdentityProvider implements IdentityProvider {
   registerCalls: { email: string; password: string; name: string; role: UserRole }[] = [];

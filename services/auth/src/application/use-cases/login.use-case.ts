@@ -26,10 +26,13 @@ export class LoginUseCase {
   constructor(
     @Inject(IDENTITY_PROVIDER)
     private readonly identityProvider: IdentityProvider,
+
     @Inject(USER_REPOSITORY)
     private readonly users: UserRepository,
+
     @Inject(TWO_FACTOR_CHALLENGE_REPOSITORY)
     private readonly challenges: TwoFactorChallengeRepository,
+
     @Inject(EMAIL_SENDER)
     private readonly emailSender: EmailSender,
     private readonly tokenCipher: TokenCipher,
