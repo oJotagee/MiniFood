@@ -14,7 +14,7 @@
     "docker:dev:down": "docker compose -f docker-compose.dev.yml down",
     "docker:dev:prune": "docker compose -f docker-compose.dev.yml down -v --remove-orphans",
     "test": "bun run test:unit",
-    "test:unit": "bun test services/catalog/tests/unit services/auth/tests/unit",
+    "test:unit": "bun test services/catalog/tests/unit services/auth/tests/unit services/order/tests/unit",
     "test:integration:catalog": "bun run --cwd services/catalog test:integration",
     "test:integration:auth": "bun run --cwd services/auth test:integration",
     "test:coverage": "bun test --coverage services/catalog/tests/unit services/auth/tests/unit",
@@ -22,6 +22,9 @@
     "prisma:migrate:dev:catalog": "bun prisma migrate dev --config services/catalog/prisma.config.ts",
     "prisma:generate:catalog": "bunx prisma generate --config services/catalog/prisma.config.ts",
     "prisma:studio:catalog": "bunx prisma studio --config services/catalog/prisma.config.ts",
+    "prisma:migrate:dev:order": "bun prisma migrate dev --config services/order/prisma.config.ts",
+    "prisma:generate:order": "bunx prisma generate --config services/order/prisma.config.ts",
+    "prisma:studio:order": "bunx prisma studio --config services/order/prisma.config.ts",
     "prisma:migrate:dev:auth": "bun prisma migrate dev --config services/auth/prisma.config.ts",
     "prisma:generate:auth": "bunx prisma generate --config services/auth/prisma.config.ts",
     "prisma:studio:auth": "bunx prisma studio --config services/auth/prisma.config.ts"
