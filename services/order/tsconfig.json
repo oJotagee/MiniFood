@@ -34,11 +34,11 @@
   "include": [
     "src/**/*",
     "generated/**/*",
-    "prisma.config.ts"
+    "prisma.config.ts",
+    "tests"
   ],
   "exclude": [
     "node_modules",
     "dist",
-    "tests"
   ]
 }
