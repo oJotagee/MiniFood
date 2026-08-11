@@ -4,6 +4,7 @@ import { InMemoryTwoFactorChallengeRepository } from '../../support/in-memory-tw
 import { VerifyTwoFactorUseCase } from '@/application/use-cases/verify-two-factor.use-case';
 import { TwoFactorChallengeEntity } from '@/domain/entities/two-factor-challenge.entity';
 import { FakeIdentityProvider } from '../../support/fake-identity-provider';
+import { FakeSecretGenerator } from '../../support/fake-secret-generator';
 import { TokenCipher } from '@/infrastructure/security/token-cipher';
 import {
   InvalidTwoFactorChallengeError,
@@ -21,13 +22,20 @@ describe('VerifyTwoFactorUseCase', () => {
     challenges = new InMemoryTwoFactorChallengeRepository();
     identityProvider = new FakeIdentityProvider();
     tokenCipher = new TokenCipher();
-    useCase = new VerifyTwoFactorUseCase(challenges, identityProvider, tokenCipher);
+    useCase = new VerifyTwoFactorUseCase(
+      challenges,
+      identityProvider,
+      new FakeSecretGenerator(),
+      tokenCipher,
+    );
   });
 
   it('exchanges the encrypted refresh token for fresh tokens on a correct code', async () => {
-    const { entity, rawCode } = TwoFactorChallengeEntity.issue({
+    const rawCode = '000001';
+    const entity = TwoFactorChallengeEntity.issue({
       id: 'challenge-1',
       userId: 'user-1',
+      codeHash: 'hash:000001',
       encryptedRefreshToken: tokenCipher.encrypt('the-real-refresh-token'),
     });
     await challenges.create(entity);
@@ -43,9 +51,10 @@ describe('VerifyTwoFactorUseCase', () => {
   });
 
   it('rejects an incorrect code and persists the failed attempt', async () => {
-    const { entity } = TwoFactorChallengeEntity.issue({
+    const entity = TwoFactorChallengeEntity.issue({
       id: 'challenge-1',
       userId: 'user-1',
+      codeHash: 'hash:000001',
       encryptedRefreshToken: tokenCipher.encrypt('token'),
     });
     await challenges.create(entity);
@@ -65,9 +74,11 @@ describe('VerifyTwoFactorUseCase', () => {
   });
 
   it('rejects a code for an already-consumed challenge', async () => {
-    const { entity, rawCode } = TwoFactorChallengeEntity.issue({
+    const rawCode = '000001';
+    const entity = TwoFactorChallengeEntity.issue({
       id: 'challenge-1',
       userId: 'user-1',
+      codeHash: 'hash:000001',
       encryptedRefreshToken: tokenCipher.encrypt('token'),
     });
     await challenges.create(entity);

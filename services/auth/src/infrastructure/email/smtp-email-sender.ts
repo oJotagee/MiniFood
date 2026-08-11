@@ -1,5 +1,5 @@
-import { Injectable, Logger } from '@nestjs/common';
 import { createTransport, type Transporter } from 'nodemailer';
+import { Injectable, Logger } from '@nestjs/common';
 
 import type { EmailSender } from '@/application/port/email-sender.port';
 

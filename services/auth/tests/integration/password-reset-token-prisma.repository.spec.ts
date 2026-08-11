@@ -50,15 +50,17 @@ describe('PasswordResetTokenPrismaRepository (integration)', () => {
   describe('create + findByTokenHash', () => {
     it('persists a token and rehydrates it from the database', async () => {
       const userId = await createUser();
-      const { entity, rawToken } = PasswordResetTokenEntity.issue({
+      const rawToken = 'token-1';
+      const entity = PasswordResetTokenEntity.issue({
         id: crypto.randomUUID(),
         userId,
+        tokenHash: `hash:${rawToken}`,
       });
       createdIds.push(entity.id);
 
       await repository.create(entity);
 
-      const found = await repository.findByTokenHash(PasswordResetTokenEntity.hash(rawToken));
+      const found = await repository.findByTokenHash(`hash:${rawToken}`);
 
       expect(found).not.toBeNull();
       expect(found).toBeInstanceOf(PasswordResetTokenEntity);
@@ -77,7 +79,11 @@ describe('PasswordResetTokenPrismaRepository (integration)', () => {
   describe('markAsUsed', () => {
     it('persists the consumed timestamp', async () => {
       const userId = await createUser();
-      const { entity } = PasswordResetTokenEntity.issue({ id: crypto.randomUUID(), userId });
+      const entity = PasswordResetTokenEntity.issue({
+        id: crypto.randomUUID(),
+        userId,
+        tokenHash: 'hash:token-1',
+      });
       createdIds.push(entity.id);
       await repository.create(entity);
 

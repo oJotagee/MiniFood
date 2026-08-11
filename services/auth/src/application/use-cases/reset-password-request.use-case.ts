@@ -8,6 +8,8 @@ import { USER_REPOSITORY } from '../port/user-repository.port';
 import type { EmailSender } from '../port/email-sender.port';
 import { EMAIL_SENDER } from '../port/email-sender.port';
 import { Email } from '@/domain/value-objects/email.vo';
+import type { SecretGenerator } from '../port/secret-generator.port';
+import { SECRET_GENERATOR } from '../port/secret-generator.port';
 
 @Injectable()
 export class ResetPasswordRequestUseCase {
@@ -20,6 +22,8 @@ export class ResetPasswordRequestUseCase {
 
     @Inject(EMAIL_SENDER)
     private readonly emailSender: EmailSender,
+    @Inject(SECRET_GENERATOR)
+    private readonly secrets: SecretGenerator,
   ) {}
 
   async execute({ email }: { email: string }): Promise<void> {
@@ -28,9 +32,11 @@ export class ResetPasswordRequestUseCase {
     const user = await this.users.findByEmail(validEmail.toString());
     if (!user) return;
 
-    const { entity, rawToken } = PasswordResetTokenEntity.issue({
+    const rawToken = this.secrets.generateToken();
+    const entity = PasswordResetTokenEntity.issue({
       id: crypto.randomUUID(),
       userId: user.id,
+      tokenHash: this.secrets.hash(rawToken),
     });
 
     await this.resetTokens.create(entity);

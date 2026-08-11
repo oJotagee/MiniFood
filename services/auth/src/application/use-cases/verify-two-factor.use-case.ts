@@ -9,6 +9,8 @@ import {
   InvalidTwoFactorChallengeError,
   InvalidTwoFactorCodeError,
 } from '@/domain/errors/two-factor-challenge.error';
+import type { SecretGenerator } from '../port/secret-generator.port';
+import { SECRET_GENERATOR } from '../port/secret-generator.port';
 
 type VerifyTwoFactorInput = {
   challengeId: string;
@@ -23,15 +25,17 @@ export class VerifyTwoFactorUseCase {
 
     @Inject(IDENTITY_PROVIDER)
     private readonly identityProvider: IdentityProvider,
+    @Inject(SECRET_GENERATOR)
+    private readonly secrets: SecretGenerator,
     private readonly tokenCipher: TokenCipher,
-  ) { }
+  ) {}
 
   async execute(input: VerifyTwoFactorInput): Promise<IdentityTokens> {
     const challenge = await this.challenges.findById(input.challengeId);
 
     if (!challenge) throw new InvalidTwoFactorChallengeError('Challenge not found.');
 
-    const result = challenge.verify(input.code);
+    const result = challenge.verify(this.secrets.hash(input.code));
 
     await this.challenges.update(result.challenge);
 

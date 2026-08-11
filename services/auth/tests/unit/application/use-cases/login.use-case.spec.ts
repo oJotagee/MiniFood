@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it } from 'bun:test';
 import { InMemoryTwoFactorChallengeRepository } from '../../support/in-memory-two-factor-challenge.repository';
 import { InMemoryUserRepository } from '../../support/in-memory-user.repository';
 import { FakeIdentityProvider } from '../../support/fake-identity-provider';
+import { FakeSecretGenerator } from '../../support/fake-secret-generator';
 import { LoginUseCase } from '@/application/use-cases/login.use-case';
 import { TokenCipher } from '@/infrastructure/security/token-cipher';
 import { FakeEmailSender } from '../../support/fake-email-sender';
@@ -22,7 +23,14 @@ describe('LoginUseCase', () => {
     challenges = new InMemoryTwoFactorChallengeRepository();
     identityProvider = new FakeIdentityProvider();
     emailSender = new FakeEmailSender();
-    useCase = new LoginUseCase(identityProvider, users, challenges, emailSender, new TokenCipher());
+    useCase = new LoginUseCase(
+      identityProvider,
+      users,
+      challenges,
+      emailSender,
+      new FakeSecretGenerator(),
+      new TokenCipher(),
+    );
   });
 
   it('returns tokens directly when the user does not have two-factor enabled', async () => {

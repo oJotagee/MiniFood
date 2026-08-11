@@ -11,6 +11,8 @@ import { USER_REPOSITORY } from '../port/user-repository.port';
 import { UserNotFoundError } from '@/domain/errors/user.error';
 import type { EmailSender } from '../port/email-sender.port';
 import { EMAIL_SENDER } from '../port/email-sender.port';
+import type { SecretGenerator } from '../port/secret-generator.port';
+import { SECRET_GENERATOR } from '../port/secret-generator.port';
 
 type LoginInput = {
   email: string;
@@ -35,8 +37,10 @@ export class LoginUseCase {
 
     @Inject(EMAIL_SENDER)
     private readonly emailSender: EmailSender,
+    @Inject(SECRET_GENERATOR)
+    private readonly secrets: SecretGenerator,
     private readonly tokenCipher: TokenCipher,
-  ) { }
+  ) {}
 
   async execute(input: LoginInput): Promise<LoginOutput> {
     const tokens = await this.identityProvider.login(input.email, input.password);
@@ -48,9 +52,11 @@ export class LoginUseCase {
       return { requiresTwoFactor: false, ...tokens };
     }
 
-    const { entity, rawCode } = TwoFactorChallengeEntity.issue({
+    const rawCode = this.secrets.generateVerificationCode();
+    const entity = TwoFactorChallengeEntity.issue({
       id: crypto.randomUUID(),
       userId: user.id,
+      codeHash: this.secrets.hash(rawCode),
       encryptedRefreshToken: this.tokenCipher.encrypt(tokens.refreshToken),
     });
 

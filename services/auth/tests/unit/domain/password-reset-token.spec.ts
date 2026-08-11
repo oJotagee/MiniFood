@@ -8,27 +8,25 @@ import {
 } from '@/domain/errors/password-reset-token.error';
 
 describe('PasswordResetTokenEntity', () => {
-  it('issues a token with a raw value and a matching hash', () => {
-    const { entity, rawToken } = PasswordResetTokenEntity.issue({
+  it('issues a token with the hash generated outside the domain', () => {
+    const entity = PasswordResetTokenEntity.issue({
       id: 'token-1',
       userId: 'user-1',
+      tokenHash: 'hash:token-1',
     });
 
     expect(entity.userId).toBe('user-1');
-    expect(entity.tokenHash).toBe(PasswordResetTokenEntity.hash(rawToken));
+    expect(entity.tokenHash).toBe('hash:token-1');
     expect(entity.usedAt).toBeUndefined();
     expect(entity.expiresAt.getTime()).toBeGreaterThan(Date.now());
   });
 
-  it('generates different raw tokens on each issue', () => {
-    const first = PasswordResetTokenEntity.issue({ id: 'token-1', userId: 'user-1' });
-    const second = PasswordResetTokenEntity.issue({ id: 'token-2', userId: 'user-1' });
-
-    expect(first.rawToken).not.toBe(second.rawToken);
-  });
-
   it('marks a token as used', () => {
-    const { entity } = PasswordResetTokenEntity.issue({ id: 'token-1', userId: 'user-1' });
+    const entity = PasswordResetTokenEntity.issue({
+      id: 'token-1',
+      userId: 'user-1',
+      tokenHash: 'hash:token-1',
+    });
 
     const used = entity.markAsUsed();
 
@@ -36,14 +34,22 @@ describe('PasswordResetTokenEntity', () => {
   });
 
   it('assertUsable rejects an already-used token', () => {
-    const { entity } = PasswordResetTokenEntity.issue({ id: 'token-1', userId: 'user-1' });
+    const entity = PasswordResetTokenEntity.issue({
+      id: 'token-1',
+      userId: 'user-1',
+      tokenHash: 'hash:token-1',
+    });
     const used = entity.markAsUsed();
 
     expect(() => used.assertUsable()).toThrow(PasswordResetTokenAlreadyUsedError);
   });
 
   it('markAsUsed rejects an already-used token', () => {
-    const { entity } = PasswordResetTokenEntity.issue({ id: 'token-1', userId: 'user-1' });
+    const entity = PasswordResetTokenEntity.issue({
+      id: 'token-1',
+      userId: 'user-1',
+      tokenHash: 'hash:token-1',
+    });
     const used = entity.markAsUsed();
 
     expect(() => used.markAsUsed()).toThrow(PasswordResetTokenAlreadyUsedError);

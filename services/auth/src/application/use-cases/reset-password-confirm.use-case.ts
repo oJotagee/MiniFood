@@ -6,6 +6,8 @@ import { InvalidPasswordResetTokenError } from '@/domain/errors/password-reset-t
 import { PasswordResetTokenEntity } from '@/domain/entities/password-reset-token.entity';
 import type { IdentityProvider } from '../port/identity-provider.port';
 import { IDENTITY_PROVIDER } from '../port/identity-provider.port';
+import type { SecretGenerator } from '../port/secret-generator.port';
+import { SECRET_GENERATOR } from '../port/secret-generator.port';
 
 type ResetPasswordConfirmInput = {
   token: string;
@@ -20,10 +22,12 @@ export class ResetPasswordConfirmUseCase {
 
     @Inject(IDENTITY_PROVIDER)
     private readonly identityProvider: IdentityProvider,
+    @Inject(SECRET_GENERATOR)
+    private readonly secrets: SecretGenerator,
   ) {}
 
   async execute(input: ResetPasswordConfirmInput): Promise<void> {
-    const tokenHash = PasswordResetTokenEntity.hash(input.token);
+    const tokenHash = this.secrets.hash(input.token);
     const resetToken = await this.resetTokens.findByTokenHash(tokenHash);
 
     if (!resetToken) throw new InvalidPasswordResetTokenError('Reset token is invalid.');

@@ -1,5 +1,3 @@
-import { createHash, randomBytes } from 'node:crypto';
-
 import {
   InvalidPasswordResetTokenError,
   PasswordResetTokenAlreadyUsedError,
@@ -48,30 +46,20 @@ export class PasswordResetTokenEntity {
     return this.props.createdAt;
   }
 
-  static issue(input: { id: string; userId: string }): {
-    entity: PasswordResetTokenEntity;
-    rawToken: string;
-  } {
-    const rawToken = randomBytes(32).toString('hex');
+  static issue(input: { id: string; userId: string; tokenHash: string }): PasswordResetTokenEntity {
     const now = new Date();
 
-    const entity = new PasswordResetTokenEntity({
+    return new PasswordResetTokenEntity({
       id: input.id,
       userId: input.userId,
-      tokenHash: PasswordResetTokenEntity.hash(rawToken),
+      tokenHash: input.tokenHash,
       expiresAt: new Date(now.getTime() + TOKEN_TTL_MS),
       createdAt: now,
     });
-
-    return { entity, rawToken };
   }
 
   static restore(input: PasswordResetTokenRestoreInput): PasswordResetTokenEntity {
     return new PasswordResetTokenEntity({ ...input });
-  }
-
-  static hash(rawToken: string): string {
-    return createHash('sha256').update(rawToken).digest('hex');
   }
 
   markAsUsed(): PasswordResetTokenEntity {

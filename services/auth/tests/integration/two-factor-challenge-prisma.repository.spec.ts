@@ -8,11 +8,16 @@ import { TwoFactorChallengeEntity } from '@/domain/entities/two-factor-challenge
 import { PrismaService } from '@/infrastructure/prisma/prisma.service';
 
 function issueChallenge(userId: string) {
-  return TwoFactorChallengeEntity.issue({
+  const rawCode = '123456';
+  return {
+    rawCode,
+    entity: TwoFactorChallengeEntity.issue({
     id: crypto.randomUUID(),
     userId,
+    codeHash: `hash:${rawCode}`,
     encryptedRefreshToken: 'encrypted-refresh-token',
-  });
+    }),
+  };
 }
 
 describe('TwoFactorChallengePrismaRepository (integration)', () => {
@@ -70,7 +75,7 @@ describe('TwoFactorChallengePrismaRepository (integration)', () => {
       expect(found?.userId).toBe(userId);
       expect(found?.attempts).toBe(0);
       expect(found?.consumedAt).toBeUndefined();
-      expect(found?.codeHash).toBe(TwoFactorChallengeEntity.hash(rawCode));
+      expect(found?.codeHash).toBe(`hash:${rawCode}`);
     });
 
     it('returns null when the challenge does not exist', async () => {
@@ -87,7 +92,7 @@ describe('TwoFactorChallengePrismaRepository (integration)', () => {
       createdIds.push(entity.id);
       await repository.create(entity);
 
-      const result = entity.verify(rawCode);
+      const result = entity.verify(`hash:${rawCode}`);
       await repository.update(result.challenge);
 
       const found = await repository.findById(entity.id);
@@ -101,7 +106,7 @@ describe('TwoFactorChallengePrismaRepository (integration)', () => {
       createdIds.push(entity.id);
       await repository.create(entity);
 
-      const result = entity.verify('000000');
+      const result = entity.verify('hash:000000');
       await repository.update(result.challenge);
 
       const found = await repository.findById(entity.id);

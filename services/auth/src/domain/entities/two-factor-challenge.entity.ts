@@ -1,5 +1,3 @@
-import { createHash, randomInt } from 'node:crypto';
-
 import {
   InvalidTwoFactorChallengeError,
   TwoFactorChallengeAlreadyUsedError,
@@ -62,32 +60,28 @@ export class TwoFactorChallengeEntity {
     return this.props.createdAt;
   }
 
-  static issue(input: { id: string; userId: string; encryptedRefreshToken: string }): {
-    entity: TwoFactorChallengeEntity;
-    rawCode: string;
-  } {
-    const rawCode = randomInt(0, 1_000_000).toString().padStart(6, '0');
+  static issue(input: {
+    id: string;
+    userId: string;
+    codeHash: string;
+    encryptedRefreshToken: string;
+  }): TwoFactorChallengeEntity {
     const now = new Date();
 
-    const entity = new TwoFactorChallengeEntity({
+    return new TwoFactorChallengeEntity({
       id: input.id,
       userId: input.userId,
-      codeHash: TwoFactorChallengeEntity.hash(rawCode),
+      codeHash: input.codeHash,
       encryptedRefreshToken: input.encryptedRefreshToken,
       expiresAt: new Date(now.getTime() + CODE_TTL_MS),
       attempts: 0,
       createdAt: now,
     });
 
-    return { entity, rawCode };
   }
 
   static restore(input: TwoFactorChallengeProps): TwoFactorChallengeEntity {
     return new TwoFactorChallengeEntity({ ...input });
-  }
-
-  static hash(rawCode: string): string {
-    return createHash('sha256').update(rawCode).digest('hex');
   }
 
   assertCanAttempt(): void {
@@ -96,10 +90,10 @@ export class TwoFactorChallengeEntity {
     if (this.props.attempts >= MAX_ATTEMPTS) throw new TwoFactorChallengeTooManyAttemptsError();
   }
 
-  verify(rawCode: string): TwoFactorVerifyResult {
+  verify(codeHash: string): TwoFactorVerifyResult {
     this.assertCanAttempt();
 
-    if (TwoFactorChallengeEntity.hash(rawCode) !== this.props.codeHash) {
+    if (codeHash !== this.props.codeHash) {
       const challenge = new TwoFactorChallengeEntity({
         ...this.props,
         attempts: this.props.attempts + 1,

@@ -1,14 +1,15 @@
 import { beforeEach, describe, expect, it } from 'bun:test';
 
+import { InMemoryPasswordResetTokenRepository } from '../../support/in-memory-password-reset-token.repository';
 import { ResetPasswordConfirmUseCase } from '@/application/use-cases/reset-password-confirm.use-case';
 import { PasswordResetTokenEntity } from '@/domain/entities/password-reset-token.entity';
+import { FakeIdentityProvider } from '../../support/fake-identity-provider';
+import { FakeSecretGenerator } from '../../support/fake-secret-generator';
 import {
   InvalidPasswordResetTokenError,
   PasswordResetTokenAlreadyUsedError,
   PasswordResetTokenExpiredError,
 } from '@/domain/errors/password-reset-token.error';
-import { InMemoryPasswordResetTokenRepository } from '../../support/in-memory-password-reset-token.repository';
-import { FakeIdentityProvider } from '../../support/fake-identity-provider';
 
 describe('ResetPasswordConfirmUseCase', () => {
   let resetTokens: InMemoryPasswordResetTokenRepository;
@@ -18,13 +19,19 @@ describe('ResetPasswordConfirmUseCase', () => {
   beforeEach(() => {
     resetTokens = new InMemoryPasswordResetTokenRepository();
     identityProvider = new FakeIdentityProvider();
-    useCase = new ResetPasswordConfirmUseCase(resetTokens, identityProvider);
+    useCase = new ResetPasswordConfirmUseCase(
+      resetTokens,
+      identityProvider,
+      new FakeSecretGenerator(),
+    );
   });
 
   it('sets the new password and marks the token as used', async () => {
-    const { entity, rawToken } = PasswordResetTokenEntity.issue({
+    const rawToken = 'token-1';
+    const entity = PasswordResetTokenEntity.issue({
       id: 'token-1',
       userId: 'user-1',
+      tokenHash: 'hash:token-1',
     });
     await resetTokens.create(entity);
 
@@ -45,9 +52,11 @@ describe('ResetPasswordConfirmUseCase', () => {
   });
 
   it('rejects an already-used token', async () => {
-    const { entity, rawToken } = PasswordResetTokenEntity.issue({
+    const rawToken = 'token-1';
+    const entity = PasswordResetTokenEntity.issue({
       id: 'token-1',
       userId: 'user-1',
+      tokenHash: 'hash:token-1',
     });
     await resetTokens.create(entity.markAsUsed());
 
@@ -57,11 +66,11 @@ describe('ResetPasswordConfirmUseCase', () => {
   });
 
   it('rejects an expired token', async () => {
-    const { rawToken } = PasswordResetTokenEntity.issue({ id: 'token-1', userId: 'user-1' });
+    const rawToken = 'token-1';
     const expired = PasswordResetTokenEntity.restore({
       id: 'token-1',
       userId: 'user-1',
-      tokenHash: PasswordResetTokenEntity.hash(rawToken),
+      tokenHash: 'hash:token-1',
       expiresAt: new Date(Date.now() - 1000),
       createdAt: new Date(),
     });

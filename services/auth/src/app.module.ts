@@ -8,25 +8,27 @@ import { TWO_FACTOR_CHALLENGE_REPOSITORY } from './application/port/two-factor-c
 import { ResetPasswordConfirmUseCase } from './application/use-cases/reset-password-confirm.use-case';
 import { ResetPasswordRequestUseCase } from './application/use-cases/reset-password-request.use-case';
 import { SetTwoFactorEnabledUseCase } from './application/use-cases/set-two-factor-enabled.use-case';
-import { VerifyTwoFactorUseCase } from './application/use-cases/verify-two-factor.use-case';
 import { KeycloakIdentityProvider } from './infrastructure/keycloak/keycloak-identity-provider';
+import { VerifyTwoFactorUseCase } from './application/use-cases/verify-two-factor.use-case';
 import { UserPrismaRepository } from './infrastructure/repositories/user-prisma.repository';
+import { CryptoSecretGenerator } from './infrastructure/security/crypto-secret-generator';
 import { FindUserByIdUseCase } from './application/use-cases/find-user-by-id.use-case';
 import { UpdateProfileUseCase } from './application/use-cases/update-profile.use-case';
 import { DomainExceptionFilter } from './presentation/filters/domain-exception.filter';
 import { KeycloakAdminClient } from './infrastructure/keycloak/keycloak-admin.client';
 import { KeycloakTokenClient } from './infrastructure/keycloak/keycloak-token.client';
-import { SmtpEmailSender } from './infrastructure/email/smtp-email-sender';
 import { RefreshTokenUseCase } from './application/use-cases/refresh-token.use-case';
 import { RegisterUserUseCase } from './application/use-cases/register-user.use-case';
 import { HealthController } from './presentation/controllers/health.controller';
 import { IDENTITY_PROVIDER } from './application/port/identity-provider.port';
 import { UserController } from './presentation/controllers/user.controller';
-import { TokenCipher } from './infrastructure/security/token-cipher';
+import { SECRET_GENERATOR } from './application/port/secret-generator.port';
+import { SmtpEmailSender } from './infrastructure/email/smtp-email-sender';
 import { USER_REPOSITORY } from './application/port/user-repository.port';
-import { EMAIL_SENDER } from './application/port/email-sender.port';
 import { PrismaService } from './infrastructure/prisma/prisma.service';
 import { LoginUseCase } from './application/use-cases/login.use-case';
+import { TokenCipher } from './infrastructure/security/token-cipher';
+import { EMAIL_SENDER } from './application/port/email-sender.port';
 
 @Module({
   imports: [],
@@ -34,6 +36,10 @@ import { LoginUseCase } from './application/use-cases/login.use-case';
   providers: [
     PrismaService,
     TokenCipher,
+    {
+      provide: SECRET_GENERATOR,
+      useClass: CryptoSecretGenerator,
+    },
     {
       provide: APP_FILTER,
       useClass: DomainExceptionFilter,
@@ -73,4 +79,4 @@ import { LoginUseCase } from './application/use-cases/login.use-case';
     },
   ],
 })
-export class AppModule {}
+export class AppModule { }
