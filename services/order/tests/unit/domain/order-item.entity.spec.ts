@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 
-import { OrderItemEntity } from '@/domain/entities/order-item.entity';
+import { OrderItemEntity, ORDER_ITEM_CREATION_TOKEN } from '@/domain/entities/order-item.entity';
 import { Quantity } from '@/domain/value-objects/quantity.vo';
 import { Money } from '@/domain/value-objects/money.vo';
 import {
@@ -21,7 +21,7 @@ function itemInput() {
 }
 
 function createItem() {
-  return OrderItemEntity.create(itemInput());
+  return OrderItemEntity.create(itemInput(), ORDER_ITEM_CREATION_TOKEN);
 }
 
 describe('OrderItemEntity', () => {
@@ -35,7 +35,10 @@ describe('OrderItemEntity', () => {
 
   it('updates allowed fields without changing identity or parent order', () => {
     const item = createItem();
-    const updated = item.update({ name: 'Veggie hamburger', quantity: Quantity.from(3n) });
+    const updated = item.update(
+      { name: 'Veggie hamburger', quantity: Quantity.from(3n) },
+      ORDER_ITEM_CREATION_TOKEN,
+    );
 
     expect(updated.name).toBe('Veggie hamburger');
     expect(updated.quantityString).toBe('3');
@@ -63,28 +66,47 @@ describe('OrderItemEntity', () => {
   });
 
   it('rejects missing business identifiers and a blank name', () => {
-    expect(() => OrderItemEntity.create({ ...itemInput(), name: '' })).toThrow(
-      OrderItemNameCannotBeEmpty,
-    );
     expect(() =>
-      OrderItemEntity.create({
-        id: 'item-1',
-        name: 'Hamburger',
-        quantity: Quantity.from(1n),
-        price: Money.fromCents(1500n),
-        itemId: '',
-        orderId: 'order-1',
-      }),
+      OrderItemEntity.create({ ...itemInput(), name: '' }, ORDER_ITEM_CREATION_TOKEN),
+    ).toThrow(OrderItemNameCannotBeEmpty);
+    expect(() =>
+      OrderItemEntity.create(
+        {
+          id: 'item-1',
+          name: 'Hamburger',
+          quantity: Quantity.from(1n),
+          price: Money.fromCents(1500n),
+          itemId: '',
+          orderId: 'order-1',
+        },
+        ORDER_ITEM_CREATION_TOKEN,
+      ),
     ).toThrow(ItemIdNotFound);
     expect(() =>
-      OrderItemEntity.create({
-        id: 'item-1',
-        name: 'Hamburger',
-        quantity: Quantity.from(1n),
-        price: Money.fromCents(1500n),
-        itemId: 'catalog-item-1',
-        orderId: '',
-      }),
+      OrderItemEntity.create(
+        {
+          id: 'item-1',
+          name: 'Hamburger',
+          quantity: Quantity.from(1n),
+          price: Money.fromCents(1500n),
+          itemId: 'catalog-item-1',
+          orderId: '',
+        },
+        ORDER_ITEM_CREATION_TOKEN,
+      ),
     ).toThrow(OrderIdNotFound);
+  });
+
+  it('rejects create/update without the aggregate-root creation token', () => {
+    const bogusToken = Symbol('not-the-real-token') as typeof ORDER_ITEM_CREATION_TOKEN;
+
+    expect(() => OrderItemEntity.create(itemInput(), bogusToken)).toThrow(
+      'Order items can only be created or updated through the Order aggregate root.',
+    );
+
+    const item = createItem();
+    expect(() => item.update({ name: 'Hacked' }, bogusToken)).toThrow(
+      'Order items can only be created or updated through the Order aggregate root.',
+    );
   });
 });

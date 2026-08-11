@@ -1,9 +1,12 @@
 import { OrderItemDoesNotBelongToOrderError } from '../errors/order-item.errors';
+import { OrderItemEntity, ORDER_ITEM_CREATION_TOKEN } from './order-item.entity';
 import { OrderCancelledEvent } from '../events/order-cancelled.events';
 import { OrderConfirmedEvent } from '../events/order-confirmed.events';
+import { EstablishmentId } from '../value-objects/establishment-id.vo';
 import { OrderCreatedEvent } from '../events/order-created.events';
 import { CustomerId } from '../value-objects/customer-id.vo';
-import { OrderItemEntity } from './order-item.entity';
+import { Quantity } from '../value-objects/quantity.vo';
+import { Money } from '../value-objects/money.vo';
 import {
   InvalidOrderStatusError,
   InvalidOrderTransitionError,
@@ -27,7 +30,7 @@ type OrderProps = {
   id: string;
   status: OrderStatus;
   customerId: CustomerId;
-  establishmentId: string;
+  establishmentId: EstablishmentId;
   items: OrderItemEntity[];
   createdAt: Date;
   updatedAt: Date;
@@ -36,7 +39,7 @@ type OrderProps = {
 type OrderCreateInput = {
   id: string;
   customerId: CustomerId;
-  establishmentId: string;
+  establishmentId: EstablishmentId;
   items: OrderItemEntity[];
 };
 
@@ -44,7 +47,7 @@ type OrderRestoreInput = {
   id: string;
   status: OrderStatus;
   customerId: CustomerId;
-  establishmentId: string;
+  establishmentId: EstablishmentId;
   items: OrderItemEntity[];
   createdAt: Date;
   updatedAt: Date;
@@ -73,11 +76,15 @@ export class OrderEntity {
     return this.orderProps.customerId.toString();
   }
 
+  get establishmentIdString(): string {
+    return this.orderProps.establishmentId.toString();
+  }
+
   get items(): readonly OrderItemEntity[] {
     return [...this.orderProps.items];
   }
 
-  get establishmentId(): string {
+  get establishmentId(): EstablishmentId {
     return this.orderProps.establishmentId;
   }
 
@@ -108,7 +115,7 @@ export class OrderEntity {
       payload: {
         orderId: order.id,
         customerId: order.customerIdString,
-        establishmentId: order.establishmentId,
+        establishmentId: order.establishmentIdString,
         totalAmountCents: order.totalAmountCents.toString(),
       },
     });
@@ -121,6 +128,10 @@ export class OrderEntity {
       throw new InvalidOrderTransitionError(this.status, OrderStatus.CONFIRMED);
     }
 
+    if (this.orderProps.items.length === 0) {
+      throw new OrderMustHaveItemsError();
+    }
+
     this.orderProps.status = OrderStatus.CONFIRMED;
     this.orderProps.updatedAt = new Date();
 
@@ -130,7 +141,7 @@ export class OrderEntity {
       payload: {
         orderId: this.id,
         customerId: this.customerIdString,
-        establishmentId: this.establishmentId,
+        establishmentId: this.establishmentIdString,
         totalAmountCents: this.totalAmountCents.toString(),
       },
     });
@@ -150,7 +161,7 @@ export class OrderEntity {
       payload: {
         orderId: this.id,
         customerId: this.customerIdString,
-        establishmentId: this.establishmentId,
+        establishmentId: this.establishmentIdString,
         totalAmountCents: this.totalAmountCents.toString(),
       },
     });
@@ -160,6 +171,22 @@ export class OrderEntity {
     this.ensureItemBelongsToOrder(item);
     this.orderProps.items.push(item);
     this.orderProps.updatedAt = new Date();
+  }
+
+  newItem(input: { id: string; name: string; quantity: Quantity; price: Money; itemId: string }): void {
+    const item = OrderItemEntity.create(
+      {
+        id: input.id,
+        name: input.name,
+        quantity: input.quantity,
+        price: input.price,
+        itemId: input.itemId,
+        orderId: this.id,
+      },
+      ORDER_ITEM_CREATION_TOKEN,
+    );
+
+    this.addItem(item);
   }
 
   updateItem(
@@ -172,7 +199,7 @@ export class OrderEntity {
       throw new OrderItemDoesNotBelongToOrderError(itemId, this.id);
     }
 
-    this.orderProps.items[index] = this.orderProps.items[index].update(input);
+    this.orderProps.items[index] = this.orderProps.items[index].update(input, ORDER_ITEM_CREATION_TOKEN);
     this.orderProps.updatedAt = new Date();
   }
 

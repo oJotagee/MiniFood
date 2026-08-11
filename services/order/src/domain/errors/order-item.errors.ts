@@ -32,3 +32,10 @@ export class OrderItemDoesNotBelongToOrderError extends Error {
     this.name = 'OrderItemDoesNotBelongToOrderError';
   }
 }
+
+export class OrderItemCannotBeCreatedDirectlyError extends Error {
+  constructor() {
+    super('Order items can only be created or updated through the Order aggregate root.');
+    this.name = 'OrderItemCannotBeCreatedDirectlyError';
+  }
+}

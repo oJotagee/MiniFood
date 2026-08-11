@@ -6,7 +6,10 @@ import {
   OrderItemNameCannotBeEmpty,
   ItemIdNotFound,
   OrderIdNotFound,
+  OrderItemCannotBeCreatedDirectlyError,
 } from '../errors/order-item.errors';
+
+export const ORDER_ITEM_CREATION_TOKEN = Symbol('OrderItemCreationToken');
 
 type OrderItemProps = {
   id: string;
@@ -90,7 +93,11 @@ export class OrderItemEntity {
     return this.orderItemProps.updatedAt;
   }
 
-  static create(input: OrderItemCreateInput): OrderItemEntity {
+  static create(input: OrderItemCreateInput, token: typeof ORDER_ITEM_CREATION_TOKEN): OrderItemEntity {
+    if (token !== ORDER_ITEM_CREATION_TOKEN) {
+      throw new OrderItemCannotBeCreatedDirectlyError();
+    }
+
     const now = new Date();
 
     const orderItem = new OrderItemEntity({
@@ -120,7 +127,11 @@ export class OrderItemEntity {
     });
   }
 
-  update(input: OrderItemUpdateInput): OrderItemEntity {
+  update(input: OrderItemUpdateInput, token: typeof ORDER_ITEM_CREATION_TOKEN): OrderItemEntity {
+    if (token !== ORDER_ITEM_CREATION_TOKEN) {
+      throw new OrderItemCannotBeCreatedDirectlyError();
+    }
+
     const now = new Date();
 
     const orderItem = new OrderItemEntity({
