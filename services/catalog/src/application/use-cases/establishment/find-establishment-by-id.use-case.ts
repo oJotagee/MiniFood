@@ -1,11 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
 
+import type { EstablishmentRepository } from '../../ports/establishment-repository.port';
+import { ESTABLISHMENT_REPOSITORY } from '../../ports/establishment-repository.port';
 import {
   EstablishmentNotFoundError,
   EstablishmentNotOwnedError,
 } from '@/domain/errors/establishment.error';
-import type { EstablishmentRepository } from '../../ports/establishment-repository.port';
-import { ESTABLISHMENT_REPOSITORY } from '../../ports/establishment-repository.port';
 
 type AddressOutput = {
   street: string;
@@ -32,7 +32,7 @@ export class FindEstablishmentByIdUseCase {
   constructor(
     @Inject(ESTABLISHMENT_REPOSITORY)
     private readonly establishments: EstablishmentRepository,
-  ) {}
+  ) { }
 
   async execute({
     id,
