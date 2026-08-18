@@ -33,7 +33,7 @@ export class FindOrderByIdUseCase {
   constructor(
     @Inject(ORDER_REPOSITORY)
     private readonly orders: OrderRepository,
-  ) { }
+  ) {}
 
   async execute(input: FindOrderByIdInput): Promise<FindOrderByIdOutput> {
     const order = await this.orders.findById(input.id);

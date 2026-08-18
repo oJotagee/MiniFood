@@ -79,4 +79,4 @@ import { EMAIL_SENDER } from './application/port/email-sender.port';
     },
   ],
 })
-export class AppModule { }
+export class AppModule {}

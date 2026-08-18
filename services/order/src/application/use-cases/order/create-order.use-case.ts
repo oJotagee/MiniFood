@@ -11,7 +11,7 @@ import { Money } from '@/domain/value-objects/money.vo';
 
 type CreateOrderItemInput = {
   name: string;
-  quantity: bigint | string;
+  quantity: number | string;
   priceCents: bigint | string;
   itemId: string;
 };
@@ -46,7 +46,7 @@ export class CreateOrderUseCase {
   constructor(
     @Inject(ORDER_REPOSITORY)
     private readonly orders: OrderRepository,
-  ) { }
+  ) {}
 
   async execute(input: CreateOrderInput): Promise<CreateOrderOutput> {
     const orderId = crypto.randomUUID();

@@ -12,10 +12,10 @@ function issueChallenge(userId: string) {
   return {
     rawCode,
     entity: TwoFactorChallengeEntity.issue({
-    id: crypto.randomUUID(),
-    userId,
-    codeHash: `hash:${rawCode}`,
-    encryptedRefreshToken: 'encrypted-refresh-token',
+      id: crypto.randomUUID(),
+      userId,
+      codeHash: `hash:${rawCode}`,
+      encryptedRefreshToken: 'encrypted-refresh-token',
     }),
   };
 }

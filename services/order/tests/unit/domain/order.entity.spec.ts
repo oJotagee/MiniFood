@@ -3,6 +3,7 @@ import { describe, expect, it } from 'bun:test';
 import { OrderItemDoesNotBelongToOrderError } from '@/domain/errors/order-item.errors';
 import { OrderEntity, OrderStatus } from '@/domain/entities/order.entity';
 import { OrderItemEntity } from '@/domain/entities/order-item.entity';
+import { EstablishmentId } from '@/domain/value-objects/establishment-id.vo';
 import { CustomerId } from '@/domain/value-objects/customer-id.vo';
 import { Quantity } from '@/domain/value-objects/quantity.vo';
 import { Money } from '@/domain/value-objects/money.vo';
@@ -16,7 +17,7 @@ import {
 
 const orderId = 'order-1';
 
-function item(id = 'item-1', itemOrderId = orderId, quantity = 1n): OrderItemEntity {
+function item(id = 'item-1', itemOrderId = orderId, quantity = 1): OrderItemEntity {
   return OrderItemEntity.restore({
     id,
     name: 'Hamburger',
@@ -33,18 +34,18 @@ function order(items = [item()]): OrderEntity {
   return OrderEntity.create({
     id: orderId,
     customerId: CustomerId.fromString('customer-1'),
-    establishmentId: 'establishment-1',
+    establishmentId: EstablishmentId.fromString('establishment-1'),
     items,
   });
 }
 
 describe('OrderEntity', () => {
   it('creates an order with CREATED status and records a creation event', () => {
-    const entity = order([item('item-1', orderId, 2n)]);
+    const entity = order([item('item-1', orderId, 2)]);
 
     expect(entity.status).toBe(OrderStatus.CREATED);
     expect(entity.customerIdString).toBe('customer-1');
-    expect(entity.establishmentId).toBe('establishment-1');
+    expect(entity.establishmentIdString).toBe('establishment-1');
     expect(entity.pullDomainEvents()).toEqual([
       {
         type: 'order.created',
@@ -61,7 +62,7 @@ describe('OrderEntity', () => {
   });
 
   it('calculates event totals in cents using the item quantity', () => {
-    const entity = order([item('item-1', orderId, 2n), item('item-2', orderId, 3n)]);
+    const entity = order([item('item-1', orderId, 2), item('item-2', orderId, 3)]);
 
     const [event] = entity.pullDomainEvents();
 
@@ -76,7 +77,7 @@ describe('OrderEntity', () => {
       id: orderId,
       status: OrderStatus.CONFIRMED,
       customerId: CustomerId.fromString('customer-1'),
-      establishmentId: 'establishment-1',
+      establishmentId: EstablishmentId.fromString('establishment-1'),
       items: [item()],
       createdAt,
       updatedAt,
@@ -204,7 +205,7 @@ describe('OrderEntity', () => {
           id: '',
           status: OrderStatus.CREATED,
           customerId: CustomerId.fromString('customer-1'),
-          establishmentId: 'establishment-1',
+          establishmentId: EstablishmentId.fromString('establishment-1'),
           items: [item('item-1', orderId)],
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -218,7 +219,7 @@ describe('OrderEntity', () => {
           id: orderId,
           status: '' as OrderStatus,
           customerId: CustomerId.fromString('customer-1'),
-          establishmentId: 'establishment-1',
+          establishmentId: EstablishmentId.fromString('establishment-1'),
           items: [item()],
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -232,7 +233,7 @@ describe('OrderEntity', () => {
           id: orderId,
           status: 'NOT_A_STATUS' as OrderStatus,
           customerId: CustomerId.fromString('customer-1'),
-          establishmentId: 'establishment-1',
+          establishmentId: EstablishmentId.fromString('establishment-1'),
           items: [item()],
           createdAt: new Date(),
           updatedAt: new Date(),

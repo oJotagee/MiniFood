@@ -77,7 +77,6 @@ export class TwoFactorChallengeEntity {
       attempts: 0,
       createdAt: now,
     });
-
   }
 
   static restore(input: TwoFactorChallengeProps): TwoFactorChallengeEntity {

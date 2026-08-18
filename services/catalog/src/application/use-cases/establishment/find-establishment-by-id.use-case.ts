@@ -32,7 +32,7 @@ export class FindEstablishmentByIdUseCase {
   constructor(
     @Inject(ESTABLISHMENT_REPOSITORY)
     private readonly establishments: EstablishmentRepository,
-  ) { }
+  ) {}
 
   async execute({
     id,

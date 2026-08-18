@@ -12,7 +12,7 @@ type UpdateOrderItemInput = {
   itemId: string;
   requesterId: string;
   name?: string;
-  quantity?: bigint | string;
+  quantity?: number | string;
   priceCents?: bigint | string;
 };
 
@@ -31,7 +31,7 @@ export class UpdateOrderItemUseCase {
   constructor(
     @Inject(ORDER_REPOSITORY)
     private readonly orders: OrderRepository,
-  ) { }
+  ) {}
 
   async execute(input: UpdateOrderItemInput): Promise<UpdateOrderItemOutput> {
     const order = await this.orders.findById(input.orderId);

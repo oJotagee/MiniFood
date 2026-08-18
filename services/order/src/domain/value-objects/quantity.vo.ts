@@ -1,16 +1,14 @@
 import { InvalidQuantityError } from '../errors/quantity.errors';
 
 export class Quantity {
-  private constructor(readonly quantity: bigint) {
-    if (quantity <= 0n) throw new InvalidQuantityError('Quantity must be greater than zero.');
+  private constructor(readonly quantity: number) {
+    if (!Number.isInteger(quantity))
+      throw new InvalidQuantityError('Quantity must be a valid integer.');
+    if (quantity <= 0) throw new InvalidQuantityError('Quantity must be greater than zero.');
   }
 
-  static from(value: bigint | string): Quantity {
-    try {
-      return new Quantity(BigInt(value));
-    } catch {
-      throw new InvalidQuantityError('Quantity must be a valid integer.');
-    }
+  static from(value: number | string): Quantity {
+    return new Quantity(Number(value));
   }
 
   equals(other: Quantity): boolean {

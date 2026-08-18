@@ -173,7 +173,13 @@ export class OrderEntity {
     this.orderProps.updatedAt = new Date();
   }
 
-  newItem(input: { id: string; name: string; quantity: Quantity; price: Money; itemId: string }): void {
+  newItem(input: {
+    id: string;
+    name: string;
+    quantity: Quantity;
+    price: Money;
+    itemId: string;
+  }): void {
     const item = OrderItemEntity.create(
       {
         id: input.id,
@@ -191,7 +197,11 @@ export class OrderEntity {
 
   updateItem(
     itemId: string,
-    input: { name?: string; quantity?: OrderItemEntity['quantity']; price?: OrderItemEntity['price'] },
+    input: {
+      name?: string;
+      quantity?: OrderItemEntity['quantity'];
+      price?: OrderItemEntity['price'];
+    },
   ): void {
     const index = this.orderProps.items.findIndex((item) => item.id === itemId);
 
@@ -199,7 +209,10 @@ export class OrderEntity {
       throw new OrderItemDoesNotBelongToOrderError(itemId, this.id);
     }
 
-    this.orderProps.items[index] = this.orderProps.items[index].update(input, ORDER_ITEM_CREATION_TOKEN);
+    this.orderProps.items[index] = this.orderProps.items[index].update(
+      input,
+      ORDER_ITEM_CREATION_TOKEN,
+    );
     this.orderProps.updatedAt = new Date();
   }
 
@@ -239,7 +252,7 @@ export class OrderEntity {
 
   private get totalAmountCents(): bigint {
     return this.orderProps.items.reduce(
-      (total, item) => total + item.priceCents * item.quantity.quantity,
+      (total, item) => total + item.priceCents * BigInt(item.quantity.quantity),
       0n,
     );
   }

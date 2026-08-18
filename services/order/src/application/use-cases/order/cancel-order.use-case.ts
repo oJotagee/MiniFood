@@ -22,7 +22,7 @@ export class CancelOrderUseCase {
   constructor(
     @Inject(ORDER_REPOSITORY)
     private readonly orders: OrderRepository,
-  ) { }
+  ) {}
 
   async execute(input: CancelOrderInput): Promise<CancelOrderOutput> {
     const order = await this.orders.findById(input.id);

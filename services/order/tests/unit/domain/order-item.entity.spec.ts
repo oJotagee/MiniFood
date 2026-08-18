@@ -13,7 +13,7 @@ function itemInput() {
   return {
     id: 'order-item-1',
     name: 'Hamburger',
-    quantity: Quantity.from(2n),
+    quantity: Quantity.from(2),
     price: Money.fromCents(1500n),
     itemId: 'catalog-item-1',
     orderId: 'order-1',
@@ -36,7 +36,7 @@ describe('OrderItemEntity', () => {
   it('updates allowed fields without changing identity or parent order', () => {
     const item = createItem();
     const updated = item.update(
-      { name: 'Veggie hamburger', quantity: Quantity.from(3n) },
+      { name: 'Veggie hamburger', quantity: Quantity.from(3) },
       ORDER_ITEM_CREATION_TOKEN,
     );
 
@@ -53,7 +53,7 @@ describe('OrderItemEntity', () => {
     const item = OrderItemEntity.restore({
       id: 'order-item-1',
       name: 'Hamburger',
-      quantity: Quantity.from(1n),
+      quantity: Quantity.from(1),
       price: Money.fromCents(1500n),
       itemId: 'catalog-item-1',
       orderId: 'order-1',
@@ -74,7 +74,7 @@ describe('OrderItemEntity', () => {
         {
           id: 'item-1',
           name: 'Hamburger',
-          quantity: Quantity.from(1n),
+          quantity: Quantity.from(1),
           price: Money.fromCents(1500n),
           itemId: '',
           orderId: 'order-1',
@@ -87,7 +87,7 @@ describe('OrderItemEntity', () => {
         {
           id: 'item-1',
           name: 'Hamburger',
-          quantity: Quantity.from(1n),
+          quantity: Quantity.from(1),
           price: Money.fromCents(1500n),
           itemId: 'catalog-item-1',
           orderId: '',
@@ -98,14 +98,14 @@ describe('OrderItemEntity', () => {
   });
 
   it('rejects create/update without the aggregate-root creation token', () => {
-    const bogusToken = Symbol('not-the-real-token') as typeof ORDER_ITEM_CREATION_TOKEN;
+    const bogusToken = Symbol('not-the-real-token');
 
-    expect(() => OrderItemEntity.create(itemInput(), bogusToken)).toThrow(
+    expect(() => OrderItemEntity.create(itemInput(), bogusToken as any)).toThrow(
       'Order items can only be created or updated through the Order aggregate root.',
     );
 
     const item = createItem();
-    expect(() => item.update({ name: 'Hacked' }, bogusToken)).toThrow(
+    expect(() => item.update({ name: 'Hacked' }, bogusToken as any)).toThrow(
       'Order items can only be created or updated through the Order aggregate root.',
     );
   });

@@ -1,4 +1,3 @@
-
 import { Quantity } from '../value-objects/quantity.vo';
 import { Money } from '../value-objects/money.vo';
 import {
@@ -93,7 +92,10 @@ export class OrderItemEntity {
     return this.orderItemProps.updatedAt;
   }
 
-  static create(input: OrderItemCreateInput, token: typeof ORDER_ITEM_CREATION_TOKEN): OrderItemEntity {
+  static create(
+    input: OrderItemCreateInput,
+    token: typeof ORDER_ITEM_CREATION_TOKEN,
+  ): OrderItemEntity {
     if (token !== ORDER_ITEM_CREATION_TOKEN) {
       throw new OrderItemCannotBeCreatedDirectlyError();
     }

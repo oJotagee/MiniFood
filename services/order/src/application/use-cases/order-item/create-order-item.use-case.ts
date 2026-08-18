@@ -30,17 +30,20 @@ export class CreateOrderItemUseCase {
   constructor(
     @Inject(ORDER_ITEM_REPOSITORY)
     private readonly orderItems: OrderItemRepository,
-  ) { }
+  ) {}
 
   async execute(input: CreateOrderItemInput): Promise<CreateOrderItemOutput> {
-    const orderItem = OrderItemEntity.create({
-      id: crypto.randomUUID(),
-      name: input.name,
-      quantity: input.quantity,
-      price: input.price,
-      itemId: input.itemId,
-      orderId: input.orderId,
-    }, ORDER_ITEM_CREATION_TOKEN);
+    const orderItem = OrderItemEntity.create(
+      {
+        id: crypto.randomUUID(),
+        name: input.name,
+        quantity: input.quantity,
+        price: input.price,
+        itemId: input.itemId,
+        orderId: input.orderId,
+      },
+      ORDER_ITEM_CREATION_TOKEN,
+    );
 
     await this.orderItems.save(orderItem);
 
