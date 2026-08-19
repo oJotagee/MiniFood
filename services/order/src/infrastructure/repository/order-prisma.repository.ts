@@ -73,26 +73,40 @@ export class OrderPrismaRepository implements OrderRepository {
   }
 
   async save(order: OrderEntity): Promise<void> {
-    const persistence = OrderMapper.toPersistence(order);
+    const { order: persistedOrder, items } = OrderMapper.toPersistence(order);
 
-    await this.prismaService.order.create({
-      data: persistence,
+    await this.prismaService.$transaction(async (tx) => {
+      await tx.order.create({ data: persistedOrder });
+
+      if (items.length > 0) {
+        await tx.orderItem.createMany({ data: items });
+      }
     });
   }
 
   async update(order: OrderEntity): Promise<void> {
-    const persistence = OrderMapper.toPersistence(order);
+    const { order: persistedOrder, items } = OrderMapper.toPersistence(order);
 
     const existing = await this.prismaService.order.findUnique({
-      where: { id: persistence.id },
+      where: { id: persistedOrder.id },
       select: { id: true },
     });
 
-    if (!existing) throw new Error(`Order with id ${persistence.id} not found`);
+    if (!existing) throw new Error(`Order with id ${persistedOrder.id} not found`);
 
-    await this.prismaService.order.update({
-      where: { id: persistence.id },
-      data: persistence,
+    await this.prismaService.$transaction(async (tx) => {
+      await tx.order.update({
+        where: { id: persistedOrder.id },
+        data: persistedOrder,
+      });
+
+      for (const item of items) {
+        await tx.orderItem.upsert({
+          where: { id: item.id },
+          create: item,
+          update: item,
+        });
+      }
     });
   }
 }

@@ -37,16 +37,28 @@ function makePrismaMock(
     count: ReturnType<typeof mock>;
     create: ReturnType<typeof mock>;
     update: ReturnType<typeof mock>;
+    createMany: ReturnType<typeof mock>;
+    upsert: ReturnType<typeof mock>;
   }> = {},
 ) {
+  const order = {
+    findUnique: overrides.findUnique ?? mock(async () => null),
+    findMany: overrides.findMany ?? mock(async () => []),
+    count: overrides.count ?? mock(async () => 0),
+    create: overrides.create ?? mock(async () => undefined),
+    update: overrides.update ?? mock(async () => undefined),
+  };
+  const orderItem = {
+    createMany: overrides.createMany ?? mock(async () => undefined),
+    upsert: overrides.upsert ?? mock(async () => undefined),
+  };
+
   return {
-    order: {
-      findUnique: overrides.findUnique ?? mock(async () => null),
-      findMany: overrides.findMany ?? mock(async () => []),
-      count: overrides.count ?? mock(async () => 0),
-      create: overrides.create ?? mock(async () => undefined),
-      update: overrides.update ?? mock(async () => undefined),
-    },
+    order,
+    orderItem,
+    $transaction: mock(async (callback: (tx: unknown) => Promise<unknown>) =>
+      callback({ order, orderItem }),
+    ),
   } as unknown as PrismaService;
 }
 
@@ -119,20 +131,24 @@ describe('OrderPrismaRepository', () => {
   });
 
   describe('save', () => {
-    it('persists the mapped order', async () => {
+    it('persists the mapped order and its items in the same transaction', async () => {
       const prisma = makePrismaMock();
       const repository = new OrderPrismaRepository(prisma);
 
       await repository.save(buildOrder());
 
+      expect(prisma.$transaction).toHaveBeenCalled();
       expect(prisma.order.create).toHaveBeenCalledWith({
         data: expect.objectContaining({ id: 'order-1', establishmentId: 'establishment-1' }),
+      });
+      expect(prisma.orderItem.createMany).toHaveBeenCalledWith({
+        data: [expect.objectContaining({ id: 'item-1', orderId: 'order-1' })],
       });
     });
   });
 
   describe('update', () => {
-    it('updates an existing order', async () => {
+    it('updates an existing order and upserts its items', async () => {
       const prisma = makePrismaMock({ findUnique: mock(async () => ({ id: 'order-1' })) });
       const repository = new OrderPrismaRepository(prisma);
 
@@ -141,6 +157,11 @@ describe('OrderPrismaRepository', () => {
       expect(prisma.order.update).toHaveBeenCalledWith({
         where: { id: 'order-1' },
         data: expect.objectContaining({ id: 'order-1' }),
+      });
+      expect(prisma.orderItem.upsert).toHaveBeenCalledWith({
+        where: { id: 'item-1' },
+        create: expect.objectContaining({ id: 'item-1' }),
+        update: expect.objectContaining({ id: 'item-1' }),
       });
     });
 

@@ -17,6 +17,7 @@
     "test:unit": "bun test services/catalog/tests/unit services/auth/tests/unit services/order/tests/unit",
     "test:integration:catalog": "bun run --cwd services/catalog test:integration",
     "test:integration:auth": "bun run --cwd services/auth test:integration",
+    "test:integration:order": "bun run --cwd services/order test:integration",
     "test:coverage": "bun test --coverage services/catalog/tests/unit services/auth/tests/unit",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "prisma:migrate:dev:catalog": "bun prisma migrate dev --config services/catalog/prisma.config.ts",

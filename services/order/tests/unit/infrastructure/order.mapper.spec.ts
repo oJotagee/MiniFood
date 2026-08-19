@@ -85,12 +85,26 @@ describe('OrderMapper', () => {
       });
 
       expect(OrderMapper.toPersistence(order)).toEqual({
-        id: 'order-1',
-        status: OrderStatus.CREATED,
-        createdAt: rawOrder.createdAt,
-        updatedAt: rawOrder.updatedAt,
-        establishmentId: 'establishment-1',
-        customerId: 'customer-1',
+        order: {
+          id: 'order-1',
+          status: OrderStatus.CREATED,
+          createdAt: rawOrder.createdAt,
+          updatedAt: rawOrder.updatedAt,
+          establishmentId: 'establishment-1',
+          customerId: 'customer-1',
+        },
+        items: [
+          {
+            id: 'item-1',
+            name: 'Hamburger',
+            quantity: 2,
+            price: 1500n,
+            createdAt: rawOrder.createdAt,
+            updatedAt: rawOrder.updatedAt,
+            itemId: 'catalog-item-1',
+            orderId: 'order-1',
+          },
+        ],
       });
     });
   });

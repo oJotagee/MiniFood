@@ -54,12 +54,24 @@ export class OrderMapper {
 
   static toPersistence(order: OrderEntity) {
     return {
-      id: order.id,
-      status: order.status,
-      createdAt: order.createdAt,
-      updatedAt: order.updatedAt,
-      establishmentId: order.establishmentIdString,
-      customerId: order.customerIdString,
+      order: {
+        id: order.id,
+        status: order.status,
+        createdAt: order.createdAt,
+        updatedAt: order.updatedAt,
+        establishmentId: order.establishmentIdString,
+        customerId: order.customerIdString,
+      },
+      items: order.items.map((item) => ({
+        id: item.id,
+        name: item.name,
+        quantity: item.quantity.quantity,
+        price: item.priceCents,
+        createdAt: item.createdAt,
+        updatedAt: item.updatedAt,
+        itemId: item.itemId,
+        orderId: item.orderId,
+      })),
     };
   }
 }

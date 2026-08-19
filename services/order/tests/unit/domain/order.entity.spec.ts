@@ -9,7 +9,6 @@ import { Quantity } from '@/domain/value-objects/quantity.vo';
 import { Money } from '@/domain/value-objects/money.vo';
 import {
   InvalidOrderStatusError,
-  InvalidOrderTransitionError,
   OrderMustHaveItemsError,
   OrderNotFoundError,
   OrderStatusEmptyError,
@@ -87,63 +86,6 @@ describe('OrderEntity', () => {
     expect(entity.createdAt).toBe(createdAt);
     expect(entity.updatedAt).toBe(updatedAt);
     expect(entity.pullDomainEvents()).toEqual([]);
-  });
-
-  describe('confirm', () => {
-    it('confirms a created order and records a confirmation event', () => {
-      const entity = order();
-      entity.pullDomainEvents();
-
-      entity.confirm();
-
-      expect(entity.status).toBe(OrderStatus.CONFIRMED);
-      const [event] = entity.pullDomainEvents();
-      expect(event).toMatchObject({
-        type: 'order.confirmed',
-        payload: {
-          orderId: 'order-1',
-          customerId: 'customer-1',
-          establishmentId: 'establishment-1',
-          totalAmountCents: '1500',
-        },
-      });
-    });
-
-    it('rejects confirming an order that is not CREATED', () => {
-      const entity = order();
-      entity.confirm();
-
-      expect(() => entity.confirm()).toThrow(InvalidOrderTransitionError);
-    });
-  });
-
-  describe('cancel', () => {
-    it('cancels a created order and records a cancellation event', () => {
-      const entity = order();
-      entity.pullDomainEvents();
-
-      entity.cancel();
-
-      expect(entity.status).toBe(OrderStatus.CANCELED);
-      const [event] = entity.pullDomainEvents();
-      expect(event).toMatchObject({ type: 'order.cancelled' });
-    });
-
-    it('cancels a confirmed order', () => {
-      const entity = order();
-      entity.confirm();
-
-      entity.cancel();
-
-      expect(entity.status).toBe(OrderStatus.CANCELED);
-    });
-
-    it('rejects cancelling an order that is already CANCELED', () => {
-      const entity = order();
-      entity.cancel();
-
-      expect(() => entity.cancel()).toThrow(InvalidOrderTransitionError);
-    });
   });
 
   describe('aggregate boundary', () => {

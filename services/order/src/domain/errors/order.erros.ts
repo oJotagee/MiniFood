@@ -26,13 +26,6 @@ export class InvalidOrderStatusError extends Error {
   }
 }
 
-export class InvalidOrderTransitionError extends Error {
-  constructor(currentStatus: string, targetStatus: string) {
-    super(`Order cannot transition from ${currentStatus} to ${targetStatus}.`);
-    this.name = 'InvalidOrderTransitionError';
-  }
-}
-
 export class OrderNotOwnedError extends Error {
   constructor(id: string) {
     super(`Order with ID ${id} does not belong to the requester.`);

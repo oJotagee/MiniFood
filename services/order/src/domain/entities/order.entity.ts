@@ -1,7 +1,5 @@
 import { OrderItemDoesNotBelongToOrderError } from '../errors/order-item.errors';
 import { OrderItemEntity, ORDER_ITEM_CREATION_TOKEN } from './order-item.entity';
-import { OrderCancelledEvent } from '../events/order-cancelled.events';
-import { OrderConfirmedEvent } from '../events/order-confirmed.events';
 import { EstablishmentId } from '../value-objects/establishment-id.vo';
 import { OrderCreatedEvent } from '../events/order-created.events';
 import { CustomerId } from '../value-objects/customer-id.vo';
@@ -9,13 +7,12 @@ import { Quantity } from '../value-objects/quantity.vo';
 import { Money } from '../value-objects/money.vo';
 import {
   InvalidOrderStatusError,
-  InvalidOrderTransitionError,
   OrderMustHaveItemsError,
   OrderNotFoundError,
   OrderStatusEmptyError,
 } from '../errors/order.erros';
 
-export type OrderDomainEvent = OrderCreatedEvent | OrderConfirmedEvent | OrderCancelledEvent;
+export type OrderDomainEvent = OrderCreatedEvent;
 
 export enum OrderStatus {
   CREATED = 'CREATED',
@@ -121,50 +118,6 @@ export class OrderEntity {
     });
 
     return order;
-  }
-
-  confirm(): void {
-    if (this.status !== OrderStatus.CREATED) {
-      throw new InvalidOrderTransitionError(this.status, OrderStatus.CONFIRMED);
-    }
-
-    if (this.orderProps.items.length === 0) {
-      throw new OrderMustHaveItemsError();
-    }
-
-    this.orderProps.status = OrderStatus.CONFIRMED;
-    this.orderProps.updatedAt = new Date();
-
-    this.recordDomainEvent({
-      type: 'order.confirmed',
-      occurredAt: new Date(),
-      payload: {
-        orderId: this.id,
-        customerId: this.customerIdString,
-        establishmentId: this.establishmentIdString,
-        totalAmountCents: this.totalAmountCents.toString(),
-      },
-    });
-  }
-
-  cancel(): void {
-    if (this.status !== OrderStatus.CREATED && this.status !== OrderStatus.CONFIRMED) {
-      throw new InvalidOrderTransitionError(this.status, OrderStatus.CANCELED);
-    }
-
-    this.orderProps.status = OrderStatus.CANCELED;
-    this.orderProps.updatedAt = new Date();
-
-    this.recordDomainEvent({
-      type: 'order.cancelled',
-      occurredAt: new Date(),
-      payload: {
-        orderId: this.id,
-        customerId: this.customerIdString,
-        establishmentId: this.establishmentIdString,
-        totalAmountCents: this.totalAmountCents.toString(),
-      },
-    });
   }
 
   addItem(item: OrderItemEntity): void {

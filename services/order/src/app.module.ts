@@ -1,3 +1,4 @@
+import { APP_FILTER } from '@nestjs/core';
 import { Module } from '@nestjs/common';
 
 import { FindOrderItemByIdUseCase } from './application/use-cases/order-item/find-order-item-by-id.use-case';
@@ -8,24 +9,28 @@ import { OrderItemPrismaRepository } from './infrastructure/repository/order-ite
 import { FindOrderByIdUseCase } from './application/use-cases/order/find-order-by-id.use-case';
 import { FindAllOrdersUseCase } from './application/use-cases/order/find-all-orders.use-case';
 import { OrderPrismaRepository } from './infrastructure/repository/order-prisma.repository';
-import { ConfirmOrderUseCase } from './application/use-cases/order/confirm-order.use-case';
-import { CancelOrderUseCase } from './application/use-cases/order/cancel-order.use-case';
 import { CreateOrderUseCase } from './application/use-cases/order/create-order.use-case';
+import { OrderItemController } from './presentation/controllers/order-item.controller';
+import { DomainExceptionFilter } from './presentation/filters/domain-exception.filter';
 import { ORDER_ITEM_REPOSITORY } from './application/ports/order-item-repository';
+import { HealthController } from './presentation/controllers/health.controller';
+import { OrderController } from './presentation/controllers/order.controller';
 import { ORDER_REPOSITORY } from './application/ports/order.repository';
 import { PrismaService } from './infrastructure/prisma/prisma.service';
 
 @Module({
   imports: [],
-  controllers: [],
+  controllers: [HealthController, OrderController, OrderItemController],
   providers: [
     PrismaService,
+    {
+      provide: APP_FILTER,
+      useClass: DomainExceptionFilter,
+    },
     // ORDER_USE_CASES
     FindAllOrdersUseCase,
     FindOrderByIdUseCase,
     CreateOrderUseCase,
-    ConfirmOrderUseCase,
-    CancelOrderUseCase,
     {
       provide: ORDER_REPOSITORY,
       useClass: OrderPrismaRepository,
@@ -41,4 +46,4 @@ import { PrismaService } from './infrastructure/prisma/prisma.service';
     },
   ],
 })
-export class AppModule {}
+export class AppModule { }
