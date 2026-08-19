@@ -8,6 +8,4 @@ export interface OrderItemRepository {
     data: OrderItemEntity[];
     total: number;
   }>;
-  save(orderItem: OrderItemEntity): Promise<void>;
-  update(orderItem: OrderItemEntity): Promise<void>;
 }

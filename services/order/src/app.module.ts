@@ -3,7 +3,6 @@ import { Module } from '@nestjs/common';
 
 import { FindOrderItemByIdUseCase } from './application/use-cases/order-item/find-order-item-by-id.use-case';
 import { FindAllOrderItemsUseCase } from './application/use-cases/order-item/find-all-order-items.use-case';
-import { CreateOrderItemUseCase } from './application/use-cases/order-item/create-order-item.use-case';
 import { UpdateOrderItemUseCase } from './application/use-cases/order-item/update-order-item.use-case';
 import { OrderItemPrismaRepository } from './infrastructure/repository/order-item-prisma.repository';
 import { FindOrderByIdUseCase } from './application/use-cases/order/find-order-by-id.use-case';
@@ -38,7 +37,6 @@ import { PrismaService } from './infrastructure/prisma/prisma.service';
     // ORDER_ITEM_USE_CASES
     FindAllOrderItemsUseCase,
     FindOrderItemByIdUseCase,
-    CreateOrderItemUseCase,
     UpdateOrderItemUseCase,
     {
       provide: ORDER_ITEM_REPOSITORY,

@@ -124,9 +124,7 @@ describe('OrderPrismaRepository (integration)', () => {
     it('throws when updating a non-existent order', async () => {
       const order = buildOrder();
 
-      await expect(repository.update(order)).rejects.toThrow(
-        `Order with id ${order.id} not found`,
-      );
+      await expect(repository.update(order)).rejects.toThrow('Order not found.');
     });
   });
 });

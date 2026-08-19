@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
 import { OrderRepository } from '@/application/ports/order.repository';
+import { OrderNotFoundError } from '@/domain/errors/order.erros';
 import { OrderEntity } from '@/domain/entities/order.entity';
 import { OrderMapper } from '../persistence/order.mapper';
 import { PrismaService } from '../prisma/prisma.service';
@@ -87,14 +88,14 @@ export class OrderPrismaRepository implements OrderRepository {
   async update(order: OrderEntity): Promise<void> {
     const { order: persistedOrder, items } = OrderMapper.toPersistence(order);
 
-    const existing = await this.prismaService.order.findUnique({
-      where: { id: persistedOrder.id },
-      select: { id: true },
-    });
-
-    if (!existing) throw new Error(`Order with id ${persistedOrder.id} not found`);
-
     await this.prismaService.$transaction(async (tx) => {
+      const existing = await tx.order.findUnique({
+        where: { id: persistedOrder.id },
+        select: { id: true },
+      });
+
+      if (!existing) throw new OrderNotFoundError();
+
       await tx.order.update({
         where: { id: persistedOrder.id },
         data: persistedOrder,

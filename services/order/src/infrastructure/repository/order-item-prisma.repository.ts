@@ -42,28 +42,4 @@ export class OrderItemPrismaRepository implements OrderItemRepository {
       total,
     };
   }
-
-  async save(orderItem: OrderItemEntity): Promise<void> {
-    const persistence = OrderItemMapper.toPersistence(orderItem);
-
-    await this.prismaService.orderItem.create({
-      data: persistence,
-    });
-  }
-
-  async update(orderItem: OrderItemEntity): Promise<void> {
-    const persistence = OrderItemMapper.toPersistence(orderItem);
-
-    const existing = await this.prismaService.orderItem.findUnique({
-      where: { id: persistence.id },
-      select: { id: true },
-    });
-
-    if (!existing) throw new Error(`OrderItem with id ${persistence.id} not found`);
-
-    await this.prismaService.orderItem.update({
-      where: { id: persistence.id },
-      data: persistence,
-    });
-  }
 }

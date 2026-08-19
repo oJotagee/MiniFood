@@ -169,9 +169,7 @@ describe('OrderPrismaRepository', () => {
       const prisma = makePrismaMock({ findUnique: mock(async () => null) });
       const repository = new OrderPrismaRepository(prisma);
 
-      await expect(repository.update(buildOrder())).rejects.toThrow(
-        'Order with id order-1 not found',
-      );
+      await expect(repository.update(buildOrder())).rejects.toThrow('Order not found.');
 
       expect(prisma.order.update).not.toHaveBeenCalled();
     });

@@ -4,6 +4,7 @@ import { OrderItemEntity } from '@/domain/entities/order-item.entity';
 import { CustomerId } from '@/domain/value-objects/customer-id.vo';
 import { Quantity } from '@/domain/value-objects/quantity.vo';
 import { Money } from '@/domain/value-objects/money.vo';
+import { OrderItemMapper } from './order-item.mapper';
 
 type OrderPersistence = {
   id: string;
@@ -22,6 +23,15 @@ type OrderPersistence = {
     itemId: string;
     orderId: string;
   }[];
+};
+
+type OrderWritePersistence = {
+  id: string;
+  status: OrderStatus;
+  createdAt: Date;
+  updatedAt: Date;
+  establishmentId: string;
+  customerId: string;
 };
 
 export class OrderMapper {
@@ -52,7 +62,10 @@ export class OrderMapper {
     return rawList.map((raw) => this.toDomain(raw));
   }
 
-  static toPersistence(order: OrderEntity) {
+  static toPersistence(order: OrderEntity): {
+    order: OrderWritePersistence;
+    items: ReturnType<typeof OrderItemMapper.toPersistence>[];
+  } {
     return {
       order: {
         id: order.id,
@@ -62,16 +75,7 @@ export class OrderMapper {
         establishmentId: order.establishmentIdString,
         customerId: order.customerIdString,
       },
-      items: order.items.map((item) => ({
-        id: item.id,
-        name: item.name,
-        quantity: item.quantity.quantity,
-        price: item.priceCents,
-        createdAt: item.createdAt,
-        updatedAt: item.updatedAt,
-        itemId: item.itemId,
-        orderId: item.orderId,
-      })),
+      items: order.items.map((item) => OrderItemMapper.toPersistence(item)),
     };
   }
 }

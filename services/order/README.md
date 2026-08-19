@@ -14,12 +14,10 @@ src/
 
 - **Domain**: `OrderEntity` é o agregado raiz; `OrderItemEntity` só pode ser criado através dele (token de criação `ORDER_ITEM_CREATION_TOKEN`), nunca isoladamente. `Money`, `Quantity`, `CustomerId` e `EstablishmentId` como value objects. Erros de domínio próprios (`OrderNotFoundError`, `InvalidOrderTransitionError`, `OrderMustHaveItemsError`, etc.) e eventos de domínio (`order.created`, `order.confirmed`, `order.cancelled`).
 - **Application**: um caso de uso por operação (`create-order`, `find-all-orders`, `update-order-item`, etc.), dependendo apenas de portas (`OrderRepository`, `OrderItemRepository`), nunca de implementações concretas.
-- **Infrastructure**: repositórios Prisma, mappers entidade↔persistência, `PrismaService` e o guard de autenticação JWT (`JwtAuthGuard`), que valida o token contra o Keycloak.
+- **Infrastructure**: repositórios Prisma, mappers entidade↔persistência, `PrismaService` e o guard de autenticação JWT (`JwtAuthGuard`), que valida o token contra o Keycloak. `OrderPrismaRepository.save`/`update` persistem `Order` e seus `OrderItem` na mesma transação (`$transaction`) — raiz e filhos são gravados atomicamente. `OrderItemRepository` é somente leitura: como `OrderItem` não é um agregado independente, toda escrita passa pelo `OrderRepository`.
 - **Presentation**: controllers REST, DTOs de entrada/saída (validados com `class-validator`) e um filtro global (`DomainExceptionFilter`) que traduz exceções de domínio em respostas HTTP.
 
 Toda regra de posse dos dados é aplicada nos casos de uso: a identidade do usuário vem sempre do token (`req.user.userId`), nunca do corpo da requisição.
-
-> ⚠️ Ponto de atenção arquitetural: a persistência de `OrderItem` hoje passa por um repositório próprio (`OrderItemRepository`), separado do `OrderRepository`. Como `OrderItemEntity` não é um agregado independente, a escrita de itens deveria ocorrer dentro da mesma transação do `OrderRepository.save`/`update` (raiz + filhos atômicos), não por um repositório de escrita paralelo.
 
 ## Endpoints
 

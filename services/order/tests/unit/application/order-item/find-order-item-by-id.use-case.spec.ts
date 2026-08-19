@@ -10,8 +10,6 @@ describe('FindOrderItemByIdUseCase', () => {
     const orderItems: OrderItemRepository = {
       findById: mock(async () => buildOrderItem()),
       findAll: mock(async () => ({ data: [], total: 0 })),
-      save: mock(async () => undefined),
-      update: mock(async () => undefined),
     };
     const useCase = new FindOrderItemByIdUseCase(orderItems);
 
@@ -31,8 +29,6 @@ describe('FindOrderItemByIdUseCase', () => {
     const orderItems: OrderItemRepository = {
       findById: mock(async () => null),
       findAll: mock(async () => ({ data: [], total: 0 })),
-      save: mock(async () => undefined),
-      update: mock(async () => undefined),
     };
     const useCase = new FindOrderItemByIdUseCase(orderItems);
 
