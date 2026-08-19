@@ -29,7 +29,7 @@ e 2FA por e-mail que o Keycloak não expõe prontos.
 |---|---|---|---|
 | [auth](services/auth) | Implementado | 4004 | Registro, login, perfil, reset de senha e 2FA por e-mail |
 | [catalog](services/catalog) | Implementado | 4001 | Estabelecimentos, categorias e produtos |
-| order | Esqueleto | 4002 | Pedidos (ainda não implementado) |
+| [order](services/order) | Implementado | 4002 | Pedidos e itens do pedido |
 | delivery | Esqueleto | 4003 | Entregas (ainda não implementado) |
 
 Cada serviço é um app NestJS independente, rodando em runtime Bun, seguindo Clean Architecture (domain / application / infrastructure / presentation).
@@ -82,20 +82,22 @@ bun run docker:dev:up        # sobe só a infra (postgres, rabbitmq, keycloak, k
 - RabbitMQ Management: `http://localhost:15672` (admin/admin)
 - Auth (direto, sem gateway): `http://localhost:4004`
 - Catalog (direto, sem gateway): `http://localhost:4001`
+- Order (direto, sem gateway): `http://localhost:4002`
 
 ## Testes
 
 ```bash
-bun run test                       # unitários do auth e do catalog (sem banco)
+bun run test                       # unitários do auth, catalog e order (sem banco)
 bun run test:unit                  # idem
 bun run test:coverage              # com cobertura
 
 # integração (banco real — rodar por serviço, cada um isolado num processo próprio)
 bun run test:integration:catalog
 bun run test:integration:auth
+bun run test:integration:order
 ```
 
-> Não use `bun test` direto na raiz: ele varre todo o monorepo no mesmo processo, incluindo os testes de integração de `catalog` e `auth`, que usam bancos diferentes — o primeiro `.env` carregado "gruda" e os testes do outro serviço conectam no banco errado.
+> Não use `bun test` direto na raiz: ele varre todo o monorepo no mesmo processo, incluindo os testes de integração de `catalog`, `auth` e `order`, que usam bancos diferentes — o primeiro `.env` carregado "gruda" e os testes do outro serviço conectam no banco errado.
 
 ## Prisma
 
@@ -107,6 +109,10 @@ bun run prisma:studio:catalog         # abre o Prisma Studio (catalog)
 bun run prisma:generate:auth          # gera o client (auth)
 bun run prisma:migrate:dev:auth       # roda migrations em dev (auth)
 bun run prisma:studio:auth            # abre o Prisma Studio (auth)
+
+bun run prisma:generate:order         # gera o client (order)
+bun run prisma:migrate:dev:order      # roda migrations em dev (order)
+bun run prisma:studio:order           # abre o Prisma Studio (order)
 ```
 
 ## Formatação e lint
@@ -117,4 +123,4 @@ bun run format   # prettier em todo o repo
 
 ## CI
 
-O workflow em [`.github/workflows/ci.yml`](.github/workflows/ci.yml) instala dependências, gera o client Prisma do catalog, roda type-check e os testes unitários a cada push/PR na `main`.
+O workflow em [`.github/workflows/ci.yml`](.github/workflows/ci.yml) instala dependências, gera os clients Prisma (catalog, auth, order), roda type-check (catalog) e os testes unitários a cada push/PR na `main`.
