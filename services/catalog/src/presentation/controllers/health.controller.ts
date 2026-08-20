@@ -1,5 +1,6 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiResponse } from '@nestjs/swagger';
+
 import { HealthCheckResponseDto } from '../dtos/health/health-check-response.dto';
 
 @Controller()

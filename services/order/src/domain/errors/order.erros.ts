@@ -32,3 +32,10 @@ export class OrderNotOwnedError extends Error {
     this.name = 'OrderNotOwnedError';
   }
 }
+
+export class InvalidOrderTransitionError extends Error {
+  constructor(id: string, from: string, to: string) {
+    super(`Order with ID ${id} cannot transition from "${from}" to "${to}".`);
+    this.name = 'InvalidOrderTransitionError';
+  }
+}

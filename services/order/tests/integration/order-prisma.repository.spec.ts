@@ -4,6 +4,7 @@ import { config } from 'dotenv';
 config({ path: `${import.meta.dir}/../../.env` });
 
 import { ORDER_ITEM_CREATION_TOKEN, OrderItemEntity } from '@/domain/entities/order-item.entity';
+import { OutboxPrismaRepository } from '@/infrastructure/repository/outbox-prisma.repository';
 import { OrderPrismaRepository } from '@/infrastructure/repository/order-prisma.repository';
 import { EstablishmentId } from '@/domain/value-objects/establishment-id.vo';
 import { OrderEntity, OrderStatus } from '@/domain/entities/order.entity';
@@ -12,7 +13,9 @@ import { CustomerId } from '@/domain/value-objects/customer-id.vo';
 import { Quantity } from '@/domain/value-objects/quantity.vo';
 import { Money } from '@/domain/value-objects/money.vo';
 
-function buildOrder(overrides: Partial<{ id: string; customerId: string; establishmentId: string }> = {}) {
+function buildOrder(
+  overrides: Partial<{ id: string; customerId: string; establishmentId: string }> = {},
+) {
   const id = overrides.id ?? crypto.randomUUID();
 
   const item = OrderItemEntity.create(
@@ -37,7 +40,10 @@ function buildOrder(overrides: Partial<{ id: string; customerId: string; establi
 
 describe('OrderPrismaRepository (integration)', () => {
   const prismaService = new PrismaService();
-  const repository = new OrderPrismaRepository(prismaService);
+  const repository = new OrderPrismaRepository(
+    prismaService,
+    new OutboxPrismaRepository(prismaService),
+  );
   const createdOrderIds: string[] = [];
 
   beforeAll(async () => {
@@ -48,6 +54,9 @@ describe('OrderPrismaRepository (integration)', () => {
     if (createdOrderIds.length > 0) {
       await prismaService.orderItem.deleteMany({ where: { orderId: { in: createdOrderIds } } });
       await prismaService.order.deleteMany({ where: { id: { in: createdOrderIds } } });
+      await prismaService.outboxEvent.deleteMany({
+        where: { type: { in: ['order.created', 'order.approval.requested'] } },
+      });
       createdOrderIds.length = 0;
     }
   });

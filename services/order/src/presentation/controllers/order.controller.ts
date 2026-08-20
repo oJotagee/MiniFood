@@ -21,7 +21,7 @@ export class OrderController {
     private readonly findAllOrdersUseCase: FindAllOrdersUseCase,
     private readonly findOrderByIdUseCase: FindOrderByIdUseCase,
     private readonly createOrderUseCase: CreateOrderUseCase,
-  ) { }
+  ) {}
 
   @Get()
   @ApiQuery({
@@ -66,7 +66,7 @@ export class OrderController {
   createOrder(@Body() body: CreateOrderDto, @Req() req: AuthenticatedRequest): Promise<OrderDto> {
     return this.createOrderUseCase.execute({
       ...body,
-      customerId: req.user.userId, // identidade vem do token, não do body
+      customerId: req.user.userId,
     });
   }
 }

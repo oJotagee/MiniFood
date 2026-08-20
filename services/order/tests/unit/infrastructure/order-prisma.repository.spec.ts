@@ -1,5 +1,6 @@
 import { describe, expect, it, mock } from 'bun:test';
 
+import type { OutboxRepository } from '@/application/ports/outbox-repository.port';
 import { OrderPrismaRepository } from '@/infrastructure/repository/order-prisma.repository';
 import { EstablishmentId } from '@/domain/value-objects/establishment-id.vo';
 import type { PrismaService } from '@/infrastructure/prisma/prisma.service';
@@ -8,6 +9,16 @@ import { OrderItemEntity } from '@/domain/entities/order-item.entity';
 import { CustomerId } from '@/domain/value-objects/customer-id.vo';
 import { Quantity } from '@/domain/value-objects/quantity.vo';
 import { Money } from '@/domain/value-objects/money.vo';
+
+function makeOutboxMock(): OutboxRepository {
+  return {
+    add: mock(async () => undefined),
+    runInTransaction: mock(async (fn: (tx: unknown) => Promise<void>) => fn({})),
+    findPending: mock(async () => []),
+    markPublished: mock(async () => undefined),
+    markFailed: mock(async () => undefined),
+  };
+}
 
 const rawOrder = {
   id: 'order-1',
@@ -89,7 +100,7 @@ describe('OrderPrismaRepository', () => {
   describe('findById', () => {
     it('returns null when the order does not exist', async () => {
       const prisma = makePrismaMock();
-      const repository = new OrderPrismaRepository(prisma);
+      const repository = new OrderPrismaRepository(prisma, makeOutboxMock());
 
       const result = await repository.findById('missing');
 
@@ -98,7 +109,7 @@ describe('OrderPrismaRepository', () => {
 
     it('returns the mapped order when found', async () => {
       const prisma = makePrismaMock({ findUnique: mock(async () => rawOrder) });
-      const repository = new OrderPrismaRepository(prisma);
+      const repository = new OrderPrismaRepository(prisma, makeOutboxMock());
 
       const result = await repository.findById('order-1');
 
@@ -113,7 +124,7 @@ describe('OrderPrismaRepository', () => {
         findMany: mock(async () => [rawOrder]),
         count: mock(async () => 1),
       });
-      const repository = new OrderPrismaRepository(prisma);
+      const repository = new OrderPrismaRepository(prisma, makeOutboxMock());
 
       const result = await repository.findAll({ ownerId: 'establishment-1', limit: 10, offset: 0 });
 
@@ -133,7 +144,7 @@ describe('OrderPrismaRepository', () => {
   describe('save', () => {
     it('persists the mapped order and its items in the same transaction', async () => {
       const prisma = makePrismaMock();
-      const repository = new OrderPrismaRepository(prisma);
+      const repository = new OrderPrismaRepository(prisma, makeOutboxMock());
 
       await repository.save(buildOrder());
 
@@ -145,12 +156,49 @@ describe('OrderPrismaRepository', () => {
         data: [expect.objectContaining({ id: 'item-1', orderId: 'order-1' })],
       });
     });
+
+    it('writes the domain events raised by OrderEntity.create() to the outbox, inside the same transaction', async () => {
+      const prisma = makePrismaMock();
+      const outbox = makeOutboxMock();
+      const repository = new OrderPrismaRepository(prisma, outbox);
+
+      const item = OrderItemEntity.restore({
+        id: 'item-1',
+        name: 'Hamburger',
+        quantity: Quantity.from(2),
+        price: Money.fromCents(1500n),
+        itemId: 'catalog-item-1',
+        orderId: 'order-1',
+        createdAt: rawOrder.createdAt,
+        updatedAt: rawOrder.updatedAt,
+      });
+      const created = OrderEntity.create({
+        id: 'order-1',
+        customerId: CustomerId.fromString('customer-1'),
+        establishmentId: EstablishmentId.fromString('establishment-1'),
+        items: [item],
+      });
+
+      await repository.save(created);
+
+      expect(outbox.add).toHaveBeenCalledTimes(2);
+      expect(outbox.add).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({ type: 'order.created' }),
+      );
+      expect(outbox.add).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({ type: 'order.approval.requested' }),
+      );
+
+      expect(created.pullDomainEvents()).toEqual([]);
+    });
   });
 
   describe('update', () => {
     it('updates an existing order and upserts its items', async () => {
       const prisma = makePrismaMock({ findUnique: mock(async () => ({ id: 'order-1' })) });
-      const repository = new OrderPrismaRepository(prisma);
+      const repository = new OrderPrismaRepository(prisma, makeOutboxMock());
 
       await repository.update(buildOrder());
 
@@ -167,7 +215,7 @@ describe('OrderPrismaRepository', () => {
 
     it('throws when the order does not exist', async () => {
       const prisma = makePrismaMock({ findUnique: mock(async () => null) });
-      const repository = new OrderPrismaRepository(prisma);
+      const repository = new OrderPrismaRepository(prisma, makeOutboxMock());
 
       await expect(repository.update(buildOrder())).rejects.toThrow('Order not found.');
 

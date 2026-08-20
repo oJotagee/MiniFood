@@ -68,6 +68,27 @@ model Product {
   @@map("product")
 }
 
+enum OrderApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model OrderApproval {
+  orderId         String              @id @map("order_id")
+  operationId     String              @unique @map("operation_id")
+  establishmentId String              @map("establishment_id")
+  status          OrderApprovalStatus @default(PENDING)
+  items           Json
+  decidedBy       String?             @map("decided_by")
+  decidedAt       DateTime?           @map("decided_at")
+  createdAt       DateTime            @default(now()) @map("created_at")
+  updatedAt       DateTime            @updatedAt @map("updated_at")
+
+  @@index([establishmentId, status])
+  @@map("order_approvals")
+}
+
 model OutboxEvent {
   eventId     String    @id @map("event_id")
   type        String

@@ -5,6 +5,7 @@ config({ path: `${import.meta.dir}/../../.env` });
 
 import { OrderItemPrismaRepository } from '@/infrastructure/repository/order-item-prisma.repository';
 import { ORDER_ITEM_CREATION_TOKEN, OrderItemEntity } from '@/domain/entities/order-item.entity';
+import { OutboxPrismaRepository } from '@/infrastructure/repository/outbox-prisma.repository';
 import { OrderPrismaRepository } from '@/infrastructure/repository/order-prisma.repository';
 import { EstablishmentId } from '@/domain/value-objects/establishment-id.vo';
 import { PrismaService } from '@/infrastructure/prisma/prisma.service';
@@ -13,13 +14,13 @@ import { Quantity } from '@/domain/value-objects/quantity.vo';
 import { OrderEntity } from '@/domain/entities/order.entity';
 import { Money } from '@/domain/value-objects/money.vo';
 
-// OrderItem não é um agregado independente: ele só é escrito através do
-// OrderRepository (raiz + filhos na mesma transação). Este spec cobre
-// apenas o lado de leitura do OrderItemPrismaRepository.
 describe('OrderItemPrismaRepository (integration)', () => {
   const prismaService = new PrismaService();
   const repository = new OrderItemPrismaRepository(prismaService);
-  const orderRepository = new OrderPrismaRepository(prismaService);
+  const orderRepository = new OrderPrismaRepository(
+    prismaService,
+    new OutboxPrismaRepository(prismaService),
+  );
   const createdOrderIds: string[] = [];
 
   function buildItem(overrides: { name: string; priceCents: string; orderId: string }) {
@@ -37,7 +38,7 @@ describe('OrderItemPrismaRepository (integration)', () => {
   }
 
   async function createOrder(items?: OrderItemEntity[]): Promise<{ orderId: string }> {
-    const orderId = crypto.randomUUID();
+    const orderId = items?.[0]?.orderId ?? crypto.randomUUID();
 
     const order = OrderEntity.create({
       id: orderId,
@@ -100,7 +101,7 @@ describe('OrderItemPrismaRepository (integration)', () => {
         buildItem({ name: 'Soda', priceCents: '500', orderId }),
       ];
       await createOrder(items);
-      await createOrder(); // outro pedido, não deve entrar no resultado
+      await createOrder();
 
       const result = await repository.findAll({ orderId, limit: 10, offset: 0 });
 

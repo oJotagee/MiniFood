@@ -1,12 +1,12 @@
 import { ArgumentsHost, Catch, ExceptionFilter, HttpStatus } from '@nestjs/common';
 
+import { InvalidMoneyError } from '@/domain/errors/money.errors';
 import { AddressError } from '@/domain/errors/address.error';
 import {
   EstablishmentNotFoundError,
   EstablishmentNotOwnedError,
   InvalidEstablishmentDataError,
 } from '@/domain/errors/establishment.error';
-import { InvalidMoneyError } from '@/domain/errors/money.errors';
 import {
   InvalidProductCategoryError,
   ProductCategoryNotFoundError,
@@ -15,8 +15,15 @@ import {
   InvalidProductError,
   ProductAlreadyActivatedError,
   ProductAlreadyDeactivatedError,
+  ProductBelongsToAnotherEstablishmentError,
+  ProductNotAvailableError,
   ProductNotFoundError,
 } from '@/domain/errors/product.errors';
+import {
+  OrderApprovalAlreadyDecidedError,
+  OrderApprovalNotFoundError,
+  OrderApprovalNotOwnedError,
+} from '@/domain/errors/order-approval.errors';
 
 type HttpResponse = {
   status: (statusCode: number) => HttpResponse;
@@ -37,8 +44,13 @@ type DomainError =
   | ProductNotFoundError
   | ProductAlreadyDeactivatedError
   | ProductAlreadyActivatedError
+  | ProductNotAvailableError
+  | ProductBelongsToAnotherEstablishmentError
   | InvalidProductCategoryError
-  | ProductCategoryNotFoundError;
+  | ProductCategoryNotFoundError
+  | OrderApprovalNotFoundError
+  | OrderApprovalNotOwnedError
+  | OrderApprovalAlreadyDecidedError;
 
 const STATUS_BY_ERROR = new Map<Function, { statusCode: number; error: string }>([
   [AddressError, { statusCode: HttpStatus.BAD_REQUEST, error: 'BadRequest' }],
@@ -50,8 +62,16 @@ const STATUS_BY_ERROR = new Map<Function, { statusCode: number; error: string }>
   [ProductNotFoundError, { statusCode: HttpStatus.NOT_FOUND, error: 'NotFound' }],
   [ProductAlreadyDeactivatedError, { statusCode: HttpStatus.CONFLICT, error: 'Conflict' }],
   [ProductAlreadyActivatedError, { statusCode: HttpStatus.CONFLICT, error: 'Conflict' }],
+  [ProductNotAvailableError, { statusCode: HttpStatus.CONFLICT, error: 'Conflict' }],
+  [
+    ProductBelongsToAnotherEstablishmentError,
+    { statusCode: HttpStatus.CONFLICT, error: 'Conflict' },
+  ],
   [InvalidProductCategoryError, { statusCode: HttpStatus.BAD_REQUEST, error: 'BadRequest' }],
   [ProductCategoryNotFoundError, { statusCode: HttpStatus.NOT_FOUND, error: 'NotFound' }],
+  [OrderApprovalNotFoundError, { statusCode: HttpStatus.NOT_FOUND, error: 'NotFound' }],
+  [OrderApprovalNotOwnedError, { statusCode: HttpStatus.NOT_FOUND, error: 'NotFound' }],
+  [OrderApprovalAlreadyDecidedError, { statusCode: HttpStatus.CONFLICT, error: 'Conflict' }],
 ]);
 
 @Catch(
@@ -64,8 +84,13 @@ const STATUS_BY_ERROR = new Map<Function, { statusCode: number; error: string }>
   ProductNotFoundError,
   ProductAlreadyDeactivatedError,
   ProductAlreadyActivatedError,
+  ProductNotAvailableError,
+  ProductBelongsToAnotherEstablishmentError,
   InvalidProductCategoryError,
   ProductCategoryNotFoundError,
+  OrderApprovalNotFoundError,
+  OrderApprovalNotOwnedError,
+  OrderApprovalAlreadyDecidedError,
 )
 export class DomainExceptionFilter implements ExceptionFilter<DomainError> {
   catch(exception: DomainError, host: ArgumentsHost): void {

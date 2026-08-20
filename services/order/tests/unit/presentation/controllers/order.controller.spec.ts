@@ -80,9 +80,7 @@ describe('OrderController', () => {
 
     const body = {
       establishmentId: 'establishment-1',
-      items: [
-        { name: 'Hamburger', quantity: 2, priceCents: 1500n, itemId: 'catalog-item-1' },
-      ],
+      items: [{ name: 'Hamburger', quantity: 2, priceCents: 1500n, itemId: 'catalog-item-1' }],
     };
 
     const result = await controller.createOrder(body as never, requestFor('customer-1'));
@@ -100,9 +98,7 @@ describe('OrderController', () => {
     const body = {
       establishmentId: 'establishment-1',
       customerId: 'spoofed-customer',
-      items: [
-        { name: 'Hamburger', quantity: 2, priceCents: 1500n, itemId: 'catalog-item-1' },
-      ],
+      items: [{ name: 'Hamburger', quantity: 2, priceCents: 1500n, itemId: 'catalog-item-1' }],
     };
 
     await controller.createOrder(body as never, requestFor('customer-1'));

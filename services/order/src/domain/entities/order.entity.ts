@@ -2,17 +2,19 @@ import { OrderItemDoesNotBelongToOrderError } from '../errors/order-item.errors'
 import { OrderItemEntity, ORDER_ITEM_CREATION_TOKEN } from './order-item.entity';
 import { EstablishmentId } from '../value-objects/establishment-id.vo';
 import { OrderCreatedEvent } from '../events/order-created.events';
+import { OrderApprovalRequestedEvent } from '../events/order-approval-requested.event';
 import { CustomerId } from '../value-objects/customer-id.vo';
 import { Quantity } from '../value-objects/quantity.vo';
 import { Money } from '../value-objects/money.vo';
 import {
   InvalidOrderStatusError,
+  InvalidOrderTransitionError,
   OrderMustHaveItemsError,
   OrderNotFoundError,
   OrderStatusEmptyError,
 } from '../errors/order.erros';
 
-export type OrderDomainEvent = OrderCreatedEvent;
+export type OrderDomainEvent = OrderCreatedEvent | OrderApprovalRequestedEvent;
 
 export enum OrderStatus {
   CREATED = 'CREATED',
@@ -117,6 +119,21 @@ export class OrderEntity {
       },
     });
 
+    order.recordDomainEvent({
+      type: 'order.approval.requested',
+      occurredAt: now,
+      payload: {
+        operationId: `order:${order.id}:approval`,
+        orderId: order.id,
+        establishmentId: order.establishmentIdString,
+        items: order.items.map((item) => ({
+          itemId: item.itemId,
+          quantity: item.quantity.quantity,
+          priceCents: item.priceCents.toString(),
+        })),
+      },
+    });
+
     return order;
   }
 
@@ -166,6 +183,24 @@ export class OrderEntity {
       input,
       ORDER_ITEM_CREATION_TOKEN,
     );
+    this.orderProps.updatedAt = new Date();
+  }
+
+  confirm(): void {
+    if (this.orderProps.status === OrderStatus.CONFIRMED) return;
+    if (this.orderProps.status !== OrderStatus.CREATED) {
+      throw new InvalidOrderTransitionError(this.id, this.orderProps.status, OrderStatus.CONFIRMED);
+    }
+    this.orderProps.status = OrderStatus.CONFIRMED;
+    this.orderProps.updatedAt = new Date();
+  }
+
+  cancel(): void {
+    if (this.orderProps.status === OrderStatus.CANCELED) return;
+    if (this.orderProps.status !== OrderStatus.CREATED) {
+      throw new InvalidOrderTransitionError(this.id, this.orderProps.status, OrderStatus.CANCELED);
+    }
+    this.orderProps.status = OrderStatus.CANCELED;
     this.orderProps.updatedAt = new Date();
   }
 

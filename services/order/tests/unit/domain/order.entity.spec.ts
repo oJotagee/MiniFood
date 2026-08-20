@@ -56,16 +56,39 @@ describe('OrderEntity', () => {
           totalAmountCents: '3000',
         },
       },
+      {
+        type: 'order.approval.requested',
+        occurredAt: entity.createdAt,
+        payload: {
+          operationId: 'order:order-1:approval',
+          orderId: 'order-1',
+          establishmentId: 'establishment-1',
+          items: [{ itemId: 'catalog-item-1', quantity: 2, priceCents: '1500' }],
+        },
+      },
     ]);
     expect(entity.pullDomainEvents()).toEqual([]);
   });
 
-  it('calculates event totals in cents using the item quantity', () => {
+  it('calculates order.created totals in cents using the item quantity', () => {
     const entity = order([item('item-1', orderId, 2), item('item-2', orderId, 3)]);
 
-    const [event] = entity.pullDomainEvents();
+    const [createdEvent] = entity.pullDomainEvents();
 
-    expect(event.payload.totalAmountCents).toBe('7500');
+    if (createdEvent.type !== 'order.created') throw new Error('expected order.created first');
+    expect(createdEvent.payload.totalAmountCents).toBe('7500');
+  });
+
+  it('derives the approval-requested operationId deterministically from the order id', () => {
+    const entity = order([item('item-1', orderId, 2)]);
+
+    const [, approvalEvent] = entity.pullDomainEvents();
+
+    if (approvalEvent.type !== 'order.approval.requested') {
+      throw new Error('expected order.approval.requested second');
+    }
+
+    expect(approvalEvent.payload.operationId).toBe(`order:${orderId}:approval`);
   });
 
   it('restores an order without recording domain events', () => {
